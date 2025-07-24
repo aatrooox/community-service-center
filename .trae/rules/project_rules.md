@@ -20,7 +20,7 @@
 
 ### 后端技术栈
 - **桌面应用框架**: Tauri 2.7.0
-- **编程语言**: Rust (edition 2021, rust-version 1.77.2)
+- **编程语言**: Rust (edition 2021, rust-version 1.88.0)
 - **序列化**: serde 1.0 + serde_json 1.0
 - **日志**: log 0.4 + tauri-plugin-log 2
 
@@ -166,9 +166,35 @@ const calculateTotal = (items: Item[]) => { // 禁止
 
 ### 3. 样式开发规范
 
-#### 3.1 Tailwind CSS v4 使用规范
+#### 3.1 响应式设计规范
+- **必须同时考虑移动端和PC端的用户体验**
+- 使用移动优先（Mobile First）的设计理念
+- **如果用户要求的样式不合理，必须提示该排版在移动端或PC端可能存在的问题**
+- 确保关键功能在所有设备上都能正常使用
+
+```vue
+<!-- ✅ 响应式设计示例 -->
+<template>
+  <div class="container mx-auto px-4">
+    <!-- 移动端单列，桌面端多列布局 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="card">内容1</div>
+      <div class="card">内容2</div>
+      <div class="card">内容3</div>
+    </div>
+    
+    <!-- 移动端隐藏，桌面端显示的侧边栏 -->
+    <aside class="hidden lg:block lg:w-64">
+      侧边栏内容
+    </aside>
+  </div>
+</template>
+```
+
+#### 3.2 Tailwind CSS v4 使用规范
 - **完全使用 Tailwind CSS v4 进行样式开发**
 - 优先使用 Tailwind 的原子类
+- 充分利用 Tailwind 的响应式断点：`sm:`, `md:`, `lg:`, `xl:`, `2xl:`
 - 对于复杂样式，可以在 `<style>` 标签内使用 CSS
 
 ```vue
@@ -188,15 +214,57 @@ const calculateTotal = (items: Item[]) => { // 禁止
 </style>
 ```
 
-#### 3.2 shadcn-vue 组件使用
-- 使用 shadcn-vue 提供的 UI 组件
+#### 3.3 基础组件库使用规范
+- **优先使用 shadcn-vue 提供的 UI 组件**
 - 组件配置在 `components.json` 中
 - 基础颜色使用 `zinc`，样式使用 `new-york`
+- **如果需要的组件不存在，必须先提示用户使用 CLI 添加**
 
 ```bash
-# 添加新组件
+# 添加 shadcn-vue 组件
 pnpm dlx shadcn-vue@latest add button
 pnpm dlx shadcn-vue@latest add card
+pnpm dlx shadcn-vue@latest add input
+pnpm dlx shadcn-vue@latest add dialog
+```
+
+#### 3.4 动画组件库使用规范
+- **优先使用 vue-bits 动画组件库**
+- 官方文档：https://vue-bits.dev/
+- **如果需要的动画组件不存在，必须先提示用户添加**
+
+```bash
+# 添加 vue-bits 动画组件（示例）
+npx jsrepo add https://vue-bits.dev/ui/TextAnimations/SplitText
+npx jsrepo add https://vue-bits.dev/ui/Animations/FadeIn
+npx jsrepo add https://vue-bits.dev/ui/Animations/SlideIn
+```
+
+#### 3.5 动画插件使用规范
+- **优先使用 GSAP 和 motion-v 作为动画插件**
+- GSAP 用于复杂的时间轴动画和高性能动画
+- motion-v 用于 Vue 3 的声明式动画
+
+```vue
+<!-- GSAP 使用示例 -->
+<script setup lang="ts">
+import { gsap } from 'gsap'
+
+function animateElement() {
+  gsap.to('.element', { duration: 1, x: 100, rotation: 360 })
+}
+</script>
+
+<!-- motion-v 使用示例 -->
+<template>
+  <Motion
+    :initial="{ opacity: 0, y: 20 }"
+    :animate="{ opacity: 1, y: 0 }"
+    :transition="{ duration: 0.5 }"
+  >
+    <div>动画内容</div>
+  </Motion>
+</template>
 ```
 
 ### 4. TypeScript 使用规范
@@ -243,7 +311,7 @@ const props = withDefaults(defineProps<Props>(), {
 ### 2. Rust 开发规范
 
 #### 2.1 依赖管理
-- Rust 版本：1.77.2
+- Rust 版本：1.88.0
 - 使用 `serde` 进行序列化
 - 使用 `tauri-plugin-log` 进行日志记录
 
@@ -335,6 +403,9 @@ pnpm lint
 
 # 添加 shadcn-vue 组件
 pnpm dlx shadcn-vue@latest add [component-name]
+
+# 添加 vue-bits 动画组件
+npx jsrepo add [vue-bits-component-url]
 
 # Tauri 开发模式
 cd src-tauri && cargo tauri dev

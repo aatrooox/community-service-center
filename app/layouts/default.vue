@@ -9,10 +9,6 @@ useHead({
     },
   ],
 })
-// const demoTest = ref('')
-// function demo() {
-//   console.log('111')
-// }
 </script>
 
 <template>
