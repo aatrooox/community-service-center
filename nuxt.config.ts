@@ -1,15 +1,30 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config'
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   devServer: { host: process.env.TAURI_DEV_HOST || 'localhost' },
 
-  modules: [
-    '@nuxt/icon',
-    '@nuxt/eslint',
-  ],
+  modules: ['@nuxt/icon', '@nuxt/eslint', 'shadcn-nuxt'],
+  shadcn: {
+    /**
+     * Prefix for all the imported component
+     */
+    prefix: '',
+    /**
+     * Directory that the component lives in.
+     * @default "./components/ui"
+     */
+    componentDir: './components/ui'
+  },
+  css: ['~/assets/css/tailwind.css'],
   vite: {
+    plugins: [
+      tailwindcss(),
+    ],
     // 为 Tauri 命令输出提供更好的支持
     clearScreen: false,
     // 启用环境变量
