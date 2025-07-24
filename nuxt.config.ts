@@ -14,6 +14,11 @@ export default defineNuxtConfig({
       prefix: '',
       extensions: ['.vue'],
     },
+    {
+      path: '~/components/vue-bits',
+      pathPrefix: false,
+      prefix: 'VB',
+    },
   ],
   devtools: { enabled: true },
   css: ['~/assets/css/tailwind.css'],

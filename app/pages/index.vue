@@ -9,9 +9,15 @@ useHead({
   <div>
     <!-- 欢迎横幅 -->
     <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 mb-8 text-white">
-      <h1 class="text-3xl font-bold mb-4">
-        欢迎使用社区服务中心管理系统
-      </h1>
+      <VBFuzzyText
+        text="早早集市"
+        :font-size="40"
+        font-weight="900"
+        color="#fff"
+        :enable-hover="true"
+        :base-intensity="0.02"
+        :hover-intensity="0.2"
+      />
       <p class="text-blue-100 text-lg">
         为社区居民提供便民服务，提升社区管理效率
       </p>
