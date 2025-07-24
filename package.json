@@ -10,7 +10,11 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "release": "pnpm release:patch",
+    "release:patch": "npx changelogen@latest --patch --release --push",
+    "release:minor": "npx changelogen@latest --minor --release --push",
+    "release:major": "npx changelogen@latest --major --release --push"
   },
   "dependencies": {
     "@nuxt/eslint": "1.7.0",
