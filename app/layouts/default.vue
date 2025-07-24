@@ -12,78 +12,67 @@ useHead({
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- 顶部导航栏 -->
-    <header class="bg-white shadow-sm border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <!-- Logo 区域 -->
-          <div class="flex items-center">
-            <h1 class="text-xl font-semibold text-gray-900">
-              社区服务中心
-            </h1>
-          </div>
-
-          <!-- 导航菜单 -->
-          <nav class="hidden md:flex space-x-8">
-            <NuxtLink
-              to="/"
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              active-class="!text-blue-600 !bg-blue-50"
-            >
-              首页
-            </NuxtLink>
-            <NuxtLink
-              to="/services"
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              active-class="!text-blue-600 !bg-blue-50"
-            >
-              服务管理
-            </NuxtLink>
-            <NuxtLink
-              to="/residents"
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              active-class="!text-blue-600 !bg-blue-50"
-            >
-              居民管理
-            </NuxtLink>
-            <NuxtLink
-              to="/settings"
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              active-class="!text-blue-600 !bg-blue-50"
-            >
-              设置
-            </NuxtLink>
-          </nav>
-
-          <!-- 用户信息 -->
-          <div class="flex items-center space-x-4">
-            <button class="text-gray-600 hover:text-gray-900 p-2 rounded-md transition-colors">
-              <Icon name="lucide:bell" class="w-5 h-5" />
-            </button>
-            <div class="flex items-center space-x-2">
-              <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span class="text-white text-sm font-medium">管</span>
-              </div>
-              <span class="text-sm text-gray-700">管理员</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
+  <div class="min-h-screen bg-gray-50 pb-20">
     <!-- 主要内容区域 -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <slot />
     </main>
 
-    <!-- 底部信息 -->
-    <footer class="bg-white border-t mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="text-center text-sm text-gray-500">
-          © 2024 社区服务中心管理系统. 保留所有权利.
+    <!-- 底部导航栏 - macOS Dock 风格 -->
+    <nav class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+      <div class="bg-white/80 backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-2xl px-4 py-2">
+        <div class="flex items-center space-x-2">
+          <!-- 首页 -->
+          <NuxtLink
+            to="/"
+            class="dock-item flex flex-col items-center justify-center p-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group rounded-xl hover:bg-blue-50/50"
+            active-class="!text-blue-600 !bg-blue-50"
+          >
+            <Icon name="lucide:home" class="w-6 h-6 mb-1 transition-transform duration-300 group-hover:scale-110" />
+            <span class="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors duration-300">首页</span>
+          </NuxtLink>
+
+          <!-- 服务管理 -->
+          <NuxtLink
+            to="/services"
+            class="dock-item flex flex-col items-center justify-center p-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group rounded-xl hover:bg-blue-50/50"
+            active-class="!text-blue-600 !bg-blue-50"
+          >
+            <Icon name="lucide:briefcase" class="w-6 h-6 mb-1 transition-transform duration-300 group-hover:scale-110" />
+            <span class="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors duration-300">服务</span>
+          </NuxtLink>
+
+          <!-- 居民管理 -->
+          <NuxtLink
+            to="/residents"
+            class="dock-item flex flex-col items-center justify-center p-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group rounded-xl hover:bg-blue-50/50"
+            active-class="!text-blue-600 !bg-blue-50"
+          >
+            <Icon name="lucide:users" class="w-6 h-6 mb-1 transition-transform duration-300 group-hover:scale-110" />
+            <span class="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors duration-300">居民</span>
+          </NuxtLink>
+
+          <!-- Tauri 演示 -->
+          <NuxtLink
+            to="/tauri-demo"
+            class="dock-item flex flex-col items-center justify-center p-3 text-gray-600 hover:text-purple-600 transition-all duration-300 group rounded-xl hover:bg-purple-50/50"
+            active-class="!text-purple-600 !bg-purple-50"
+          >
+            <Icon name="lucide:cpu" class="w-6 h-6 mb-1 transition-transform duration-300 group-hover:scale-110" />
+            <span class="text-xs font-medium text-gray-700 group-hover:text-purple-600 transition-colors duration-300">演示</span>
+          </NuxtLink>
+
+          <!-- 设置 -->
+          <NuxtLink
+            to="/settings"
+            class="dock-item flex flex-col items-center justify-center p-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group rounded-xl hover:bg-blue-50/50"
+            active-class="!text-blue-600 !bg-blue-50"
+          >
+            <Icon name="lucide:settings" class="w-6 h-6 mb-1 transition-transform duration-300 group-hover:scale-110" />
+            <span class="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors duration-300">设置</span>
+          </NuxtLink>
         </div>
       </div>
-    </footer>
+    </nav>
   </div>
 </template>

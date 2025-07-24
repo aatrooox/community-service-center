@@ -163,6 +163,9 @@ const calculateTotal = (items: Item[]) => { // 禁止
 - 组件文件名使用 PascalCase：`UserProfile.vue`
 - 页面文件名使用 kebab-case：`user-profile.vue`
 - 组件内部名称使用 PascalCase
+- **vue-bits 组件必须使用 VB 前缀**：`<VBFadeContent>`、`<VBSlideIn>` 等
+- **shadcn-vue 组件无前缀**：`<Button>`、`<Card>` 等
+- **自定义组件无前缀**：`<UserCard>`、`<DataTable>` 等
 
 ### 3. 样式开发规范
 
@@ -363,6 +366,9 @@ async function fetchUserData(userId: number): Promise<UserData> {
 - 前端开发服务器：`http://localhost:4577`
 - 启动命令：`pnpm dev`
 - Tauri 开发模式会自动启动前端服务器
+- **重要**：由于 Tauri 使用固定端口，只能启动一个开发服务器实例
+- **禁止在每次代码修改后重新启动服务器**，应保持服务器持续运行
+- 开发过程中服务器会自动热重载，无需手动重启
 
 ### 3. 构建命令
 - 开发模式：`pnpm dev`

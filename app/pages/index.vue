@@ -1,119 +1,350 @@
 <script setup lang="ts">
+import { gsap } from 'gsap'
+
 // 设置页面标题
 useHead({
-  title: '首页',
+  title: '个人数据面板',
 })
+
+// 模拟数据
+const lifeData = ref({
+  todaySteps: 8542,
+  weeklyWorkouts: 4,
+  swimSessions: 2,
+  sleepHours: 7.5,
+  weeklyGoal: 5,
+  caloriesBurned: 2340,
+})
+
+const sideJobs = ref([
+  {
+    id: 1,
+    name: '前端开发咨询',
+    timeRange: '2024.01 - 至今',
+    status: '进行中',
+    features: ['Vue.js开发', 'UI设计', '性能优化'],
+    monthlyIncome: 8500,
+  },
+  {
+    id: 2,
+    name: '技术写作',
+    timeRange: '2023.10 - 至今',
+    status: '进行中',
+    features: ['技术博客', '教程编写', '代码审查'],
+    monthlyIncome: 3200,
+  },
+])
+
+const socialMedia = ref([
+  {
+    platform: '微信公众号',
+    followers: 12450,
+    change: '+234',
+    trend: 'up',
+    icon: 'lucide:message-circle',
+  },
+  {
+    platform: '知乎',
+    followers: 8920,
+    change: '+156',
+    trend: 'up',
+    icon: 'lucide:help-circle',
+  },
+  {
+    platform: 'B站',
+    followers: 5680,
+    change: '-23',
+    trend: 'down',
+    icon: 'lucide:video',
+  },
+  {
+    platform: '小红书',
+    followers: 3240,
+    change: '+89',
+    trend: 'up',
+    icon: 'lucide:heart',
+  },
+])
+
+const newsFeeds = ref([
+  {
+    type: 'blog',
+    title: 'Vue 3.4 正式发布，带来重大性能提升',
+    source: '尤雨溪的博客',
+    time: '2小时前',
+    isNew: true,
+  },
+  {
+    type: 'forum',
+    title: '如何在2024年成为更好的开发者？',
+    source: 'V2EX',
+    time: '4小时前',
+    isHot: true,
+  },
+  {
+    type: 'news',
+    title: 'OpenAI发布GPT-4 Turbo，成本降低3倍',
+    source: '36氪',
+    time: '6小时前',
+    isNew: true,
+  },
+  {
+    type: 'blog',
+    title: '前端架构设计的最佳实践分享',
+    source: '阮一峰的网络日志',
+    time: '1天前',
+    isNew: false,
+  },
+])
+
+// 动画效果
+function animateCards() {
+  gsap.fromTo('.dashboard-card', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
+  )
+}
+
+function animateProgress(element: string, value: number) {
+  gsap.to(element, {
+    width: `${value}%`,
+    duration: 1.2,
+    ease: 'power2.out',
+  })
+}
+
+onMounted(() => {
+  nextTick(() => {
+    animateCards()
+    animateProgress('.progress-bar', (lifeData.value.weeklyWorkouts / lifeData.value.weeklyGoal) * 100)
+  })
+})
+
+// 格式化数字
+function formatNumber(num: number) {
+  return num.toLocaleString()
+}
 </script>
 
 <template>
-  <div>
-    <!-- 欢迎横幅 -->
-    <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 mb-8 text-white">
-      <VBFuzzyText
-        text="早早集市"
-        :font-size="40"
-        font-weight="900"
-        color="#fff"
-        :enable-hover="true"
-        :base-intensity="0.02"
-        :hover-intensity="0.2"
-      />
-      <p class="text-blue-100 text-lg">
-        为社区居民提供便民服务，提升社区管理效率
-      </p>
-    </div>
-
-    <!-- 功能卡片网格 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <!-- 服务管理卡片 -->
-      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-        <div class="flex items-center mb-4">
-          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Icon name="lucide:settings" class="w-6 h-6 text-blue-600" />
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 ml-3">
-            服务管理
-          </h3>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <!-- 整合的数据面板 -->
+    <VBFadeContent :delay="0">
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <!-- 面板标题 -->
+        <div class="mb-8">
+          <h1 class="text-2xl font-bold text-gray-800 mb-2">
+            数据概览
+          </h1>
+          <p class="text-gray-600">
+            生活、工作与副业的核心指标
+          </p>
         </div>
-        <p class="text-gray-600 mb-4">
-          管理社区提供的各类便民服务，包括服务项目、流程和资源配置。
-        </p>
-        <NuxtLink
-          to="/services"
-          class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-        >
-          查看详情
-          <Icon name="lucide:arrow-right" class="w-4 h-4 ml-1" />
-        </NuxtLink>
+
+        <!-- 三列布局 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- 生活健康 -->
+          <div class="space-y-4">
+            <div class="flex items-center mb-4">
+              <Icon name="lucide:heart" class="w-6 h-6 text-red-500 mr-3" />
+              <h2 class="text-lg font-semibold text-gray-800">
+                生活健康
+              </h2>
+            </div>
+
+            <div class="space-y-3">
+              <!-- 今日步数 -->
+              <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-4 border border-emerald-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <Icon name="lucide:activity" class="w-5 h-5 text-emerald-600 mr-2" />
+                    <span class="text-sm font-medium text-emerald-800">今日步数</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-emerald-700">
+                      {{ formatNumber(lifeData.todaySteps) }}
+                    </div>
+                    <div class="text-xs text-emerald-600">
+                      步
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 本周健身 -->
+              <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <Icon name="lucide:dumbbell" class="w-5 h-5 text-blue-600 mr-2" />
+                    <span class="text-sm font-medium text-blue-800">本周健身</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-blue-700">
+                      {{ lifeData.weeklyWorkouts }}
+                    </div>
+                    <div class="text-xs text-blue-600">
+                      次
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 睡眠时长 -->
+              <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <Icon name="lucide:moon" class="w-5 h-5 text-purple-600 mr-2" />
+                    <span class="text-sm font-medium text-purple-800">睡眠时长</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-purple-700">
+                      {{ lifeData.sleepHours }}h
+                    </div>
+                    <div class="text-xs text-purple-600">
+                      昨晚
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 工作项目 -->
+          <div class="space-y-4">
+            <div class="flex items-center mb-4">
+              <Icon name="lucide:briefcase" class="w-6 h-6 text-blue-600 mr-3" />
+              <h2 class="text-lg font-semibold text-gray-800">
+                工作项目
+              </h2>
+            </div>
+
+            <div class="space-y-3">
+              <!-- 兼职项目 -->
+              <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <Icon name="lucide:folder-open" class="w-5 h-5 text-orange-600 mr-2" />
+                    <span class="text-sm font-medium text-orange-800">活跃项目</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-orange-700">
+                      {{ sideJobs.length }}
+                    </div>
+                    <div class="text-xs text-orange-600">
+                      个
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 月收入 -->
+              <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <Icon name="lucide:dollar-sign" class="w-5 h-5 text-green-600 mr-2" />
+                    <span class="text-sm font-medium text-green-800">月收入</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-green-700">
+                      ¥{{ formatNumber(sideJobs.reduce((sum, job) => sum + job.monthlyIncome, 0)) }}
+                    </div>
+                    <div class="text-xs text-green-600">
+                      本月
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 占位空间保持对齐 -->
+              <div class="h-20" />
+            </div>
+          </div>
+
+          <!-- 副业自媒体 -->
+          <div class="space-y-4">
+            <div class="flex items-center mb-4">
+              <Icon name="lucide:users" class="w-6 h-6 text-pink-600 mr-3" />
+              <h2 class="text-lg font-semibold text-gray-800">
+                副业自媒体
+              </h2>
+            </div>
+
+            <div class="space-y-3">
+              <!-- 总粉丝数 -->
+              <div class="bg-gradient-to-r from-pink-50 to-pink-100 rounded-lg p-4 border border-pink-200">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <Icon name="lucide:user-plus" class="w-5 h-5 text-pink-600 mr-2" />
+                    <span class="text-sm font-medium text-pink-800">总粉丝</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-pink-700">
+                      {{ formatNumber(socialMedia.reduce((sum, platform) => sum + platform.followers, 0)) }}
+                    </div>
+                    <div class="text-xs text-pink-600">
+                      {{ socialMedia.length }}个平台
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 占位空间保持对齐 -->
+              <div class="h-32" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </VBFadeContent>
+
+    <!-- 详细信息区域 - 可选展开 -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 兼职项目列表 -->
+      <div class="dashboard-card bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+          <Icon name="lucide:briefcase" class="w-5 h-5 text-blue-500 mr-2" />
+          兼职项目详情
+        </h3>
+        <div class="space-y-3">
+          <div v-for="job in sideJobs" :key="job.id" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div>
+              <div class="font-medium text-slate-800">
+                {{ job.name }}
+              </div>
+              <div class="text-sm text-slate-500">
+                {{ job.timeRange }}
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-semibold text-green-600">
+                ¥{{ formatNumber(job.monthlyIncome) }}
+              </div>
+              <div class="text-xs text-slate-500">
+                {{ job.status }}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 居民管理卡片 -->
-      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-        <div class="flex items-center mb-4">
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <Icon name="lucide:users" class="w-6 h-6 text-green-600" />
+      <!-- 信息流 - 精简版 -->
+      <div class="dashboard-card bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+          <Icon name="lucide:rss" class="w-5 h-5 text-orange-500 mr-2" />
+          最新资讯
+        </h3>
+        <div class="space-y-3">
+          <div v-for="item in newsFeeds.slice(0, 4)" :key="item.title" class="flex items-start justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+            <div class="flex-1">
+              <div class="font-medium text-slate-800 text-sm line-clamp-1">
+                {{ item.title }}
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                {{ item.source }}
+              </div>
+            </div>
+            <div class="text-xs text-slate-400 ml-2">
+              {{ item.time }}
+            </div>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 ml-3">
-            居民管理
-          </h3>
         </div>
-        <p class="text-gray-600 mb-4">
-          管理社区居民信息，包括基本资料、服务记录和需求统计。
-        </p>
-        <NuxtLink
-          to="/residents"
-          class="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
-        >
-          查看详情
-          <Icon name="lucide:arrow-right" class="w-4 h-4 ml-1" />
-        </NuxtLink>
-      </div>
-
-      <!-- 数据统计卡片 -->
-      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-        <div class="flex items-center mb-4">
-          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <Icon name="lucide:bar-chart-3" class="w-6 h-6 text-purple-600" />
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 ml-3">
-            数据统计
-          </h3>
-        </div>
-        <p class="text-gray-600 mb-4">
-          查看服务使用情况、居民满意度和各类数据分析报告。
-        </p>
-        <NuxtLink
-          to="/analytics"
-          class="inline-flex items-center text-purple-600 hover:text-purple-700 font-medium"
-        >
-          查看详情
-          <Icon name="lucide:arrow-right" class="w-4 h-4 ml-1" />
-        </NuxtLink>
-      </div>
-    </div>
-
-    <!-- 快速操作区域 -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">
-        快速操作
-      </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-          <Icon name="lucide:plus" class="w-6 h-6 text-blue-600 mb-2" />
-          <span class="text-sm text-gray-700">新增服务</span>
-        </button>
-        <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors">
-          <Icon name="lucide:user-plus" class="w-6 h-6 text-green-600 mb-2" />
-          <span class="text-sm text-gray-700">添加居民</span>
-        </button>
-        <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 transition-colors">
-          <Icon name="lucide:file-text" class="w-6 h-6 text-yellow-600 mb-2" />
-          <span class="text-sm text-gray-700">生成报告</span>
-        </button>
-        <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors">
-          <Icon name="lucide:settings" class="w-6 h-6 text-purple-600 mb-2" />
-          <span class="text-sm text-gray-700">系统设置</span>
-        </button>
       </div>
     </div>
   </div>
