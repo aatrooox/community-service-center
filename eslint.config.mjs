@@ -5,7 +5,7 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 export default withNuxt(
   // Your custom configs here
   {
-    ignores: ['src-tauri/**']
+    ignores: ['src-tauri/**', 'app/components/vue-bits/**'],
   },
   antfu({
     vue: {
@@ -17,7 +17,7 @@ export default withNuxt(
       html: true,
       markdown: false,
     },
-    ignores: ['app/components/ui/**', '**/*.md', 'src-tauri/**'],
+    ignores: ['app/components/ui/**', 'app/components/vue-bits/**', '**/*.md', 'src-tauri/**'],
   },
   // {
   //   files: ['*.vue'],
@@ -26,7 +26,7 @@ export default withNuxt(
   //   },
   // },
   {
-    ignores: ['app/components/ui/**', '**/*.md', 'src-tauri/**'],
+    ignores: ['app/components/ui/**', 'app/components/vue-bits/**', '**/*.md', 'src-tauri/**'],
     rules: {
       'ts/no-explicit-any': 'off',
       'no-console': 'off',
