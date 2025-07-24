@@ -1,26 +1,24 @@
+import process from 'node:process'
+import tailwindcss from '@tailwindcss/vite'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { defineNuxtConfig } from 'nuxt/config'
-import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
-  ssr: false,
-  compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
-  devServer: { host: process.env.TAURI_DEV_HOST || 'localhost' },
 
   modules: ['@nuxt/icon', '@nuxt/eslint', 'shadcn-nuxt'],
-  shadcn: {
-    /**
-     * Prefix for all the imported component
-     */
-    prefix: '',
-    /**
-     * Directory that the component lives in.
-     * @default "./components/ui"
-     */
-    componentDir: './components/ui'
-  },
+  ssr: false,
+  components: [
+    // shadcn 及与其相同配置的 ui库
+    {
+      path: '~/components/ui',
+      prefix: '',
+      extensions: ['.vue'],
+    },
+  ],
+  devtools: { enabled: true },
   css: ['~/assets/css/tailwind.css'],
+  devServer: { host: process.env.TAURI_DEV_HOST || 'localhost' },
+  compatibilityDate: '2025-07-15',
   vite: {
     plugins: [
       tailwindcss(),
@@ -35,5 +33,18 @@ export default defineNuxtConfig({
       // Tauri需要一个确定的端口
       strictPort: true,
     },
+  },
+  eslint: {
+    config: {
+      stylistic: true, // 使用 eslint 格式化
+      standalone: false,
+    },
+  },
+  shadcn: {
+    /**
+     * Prefix for all the imported component
+     */
+    prefix: '',
+    componentDir: '~/components/ui',
   },
 })
