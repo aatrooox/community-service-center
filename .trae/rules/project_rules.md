@@ -167,57 +167,216 @@ const calculateTotal = (items: Item[]) => { // 禁止
 - **shadcn-vue 组件无前缀**：`<Button>`、`<Card>` 等
 - **自定义组件无前缀**：`<UserCard>`、`<DataTable>` 等
 
-### 3. 样式开发规范
+### 3. UI设计规范
 
-#### 3.1 响应式设计规范
-- **必须同时考虑移动端和PC端的用户体验**
-- 使用移动优先（Mobile First）的设计理念
-- **如果用户要求的样式不合理，必须提示该排版在移动端或PC端可能存在的问题**
-- 确保关键功能在所有设备上都能正常使用
+#### 3.1 设计风格
+- **现代扁平化设计**：采用简洁、现代的扁平化设计风格
+- **深色主题**：以深色背景为主，营造专业、现代的视觉体验
+- **卡片式布局**：使用卡片组件组织内容，提供清晰的信息层次
+- **数据可视化导向**：重视数据展示和图表可视化
+- **渐变背景设计**：采用 cyan 系渐变背景（`from-cyan-600 via-cyan-500 to-cyan-400`），营造现代科技感
+- **毛玻璃效果**：卡片使用半透明背景配合毛玻璃效果，增强视觉层次
+- **圆角设计**：统一使用圆角设计，增加界面亲和力和现代感
+- **图标系统**：使用 Lucide 图标库，保持图标风格统一性
+
+#### 3.2 布局规范
+- **Web端布局**：采用左侧导航栏 + 右侧内容区的经典布局
+  - 左侧导航栏固定宽度（通常 240px-280px）
+  - 右侧内容区自适应剩余空间
+  - 导航栏支持折叠/展开功能
+- **移动端布局**：采用底部导航栏 + 上方内容区的布局
+  - 底部导航栏固定高度（通常 60px-80px）
+  - 上方内容区占据剩余空间
+  - 支持手势滑动切换页面
 
 ```vue
-<!-- ✅ 响应式设计示例 -->
+<!-- ✅ 响应式布局示例 -->
 <template>
-  <div class="container mx-auto px-4">
-    <!-- 移动端单列，桌面端多列布局 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="card">内容1</div>
-      <div class="card">内容2</div>
-      <div class="card">内容3</div>
-    </div>
-    
-    <!-- 移动端隐藏，桌面端显示的侧边栏 -->
-    <aside class="hidden lg:block lg:w-64">
-      侧边栏内容
+  <!-- Web端：左侧导航 + 右侧内容 -->
+  <div class="hidden lg:flex h-screen">
+    <!-- 左侧导航栏 -->
+    <aside class="w-64 bg-gray-900 border-r border-gray-800">
+      <nav class="p-4">
+        <!-- 导航菜单 -->
+      </nav>
     </aside>
+    
+    <!-- 右侧内容区 -->
+    <main class="flex-1 bg-gray-950 overflow-auto">
+      <div class="p-6">
+        <!-- 页面内容 -->
+      </div>
+    </main>
+  </div>
+  
+  <!-- 移动端：上方内容 + 底部导航 -->
+  <div class="lg:hidden flex flex-col h-screen">
+    <!-- 上方内容区 -->
+    <main class="flex-1 bg-gray-950 overflow-auto">
+      <div class="p-4">
+        <!-- 页面内容 -->
+      </div>
+    </main>
+    
+    <!-- 底部导航栏 -->
+    <nav class="h-16 bg-gray-900 border-t border-gray-800">
+      <!-- 底部导航菜单 -->
+    </nav>
   </div>
 </template>
 ```
 
-#### 3.2 Tailwind CSS v4 使用规范
+#### 3.2 配色规范
+- **主色调**：以 `cyan-600` (#0891b2) 为核心强调色
+- **配色方案**：
+  - **主要强调色**：`cyan-600` (#0891b2) - 用于主要按钮、链接、重要状态
+  - **次要强调色**：`cyan-500` (#06b6d4) - 用于悬停状态、次要按钮
+  - **渐变背景色**：`cyan-600` 到 `cyan-400` - 用于特殊区域背景、重要卡片、页面主背景
+  - **辅助色1**：`blue-600` (#2563eb) - 用于信息提示、图表数据
+  - **辅助色2**：`emerald-600` (#059669) - 用于成功状态、正向数据
+  - **辅助色3**：`orange-500` (#f97316) - 用于警告状态、中性数据
+  - **辅助色4**：`purple-600` (#9333ea) - 用于特殊功能、图表变化
+  - **背景色**：
+    - 主背景：`gray-950` (#030712) 或 cyan 系渐变背景
+    - 卡片背景：`gray-900` (#111827) 或半透明黑色
+    - 边框颜色：`gray-800` (#1f2937)
+  - **文字色**：
+    - 主要文字：`gray-100` (#f3f4f6) 或 `white`
+    - 次要文字：`gray-400` (#9ca3af) 或 `gray-300`
+    - 禁用文字：`gray-600` (#4b5563)
+
+```vue
+<!-- ✅ 配色使用示例 -->
+<template>
+  <div class="bg-gray-950 min-h-screen">
+    <!-- 主要按钮 -->
+    <button class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg">
+      主要操作
+    </button>
+    
+    <!-- 信息卡片 -->
+    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+      <h3 class="text-gray-100 text-lg font-semibold">卡片标题</h3>
+      <p class="text-gray-400 mt-2">卡片描述内容</p>
+      
+      <!-- 状态指示器 -->
+      <div class="flex gap-2 mt-4">
+        <span class="bg-emerald-600 text-white px-2 py-1 rounded text-sm">成功</span>
+        <span class="bg-orange-500 text-white px-2 py-1 rounded text-sm">警告</span>
+        <span class="bg-blue-600 text-white px-2 py-1 rounded text-sm">信息</span>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+#### 3.4 组件设计规范
+- **圆角规范**：
+  - 主要卡片：16-20px 圆角（`rounded-2xl` 或 `rounded-3xl`）
+  - 次要组件：8-12px 圆角（`rounded-lg` 或 `rounded-xl`）
+  - 小型元素：6-8px 圆角（`rounded-md` 或 `rounded-lg`）
+- **间距规范**：
+  - 组件内边距：16-24px (`p-4` 到 `p-6`)
+  - 组件间距：16-24px (`gap-4` 或 `gap-6`)
+  - 页面边距：24px (`p-6`)
+- **阴影规范**：使用 Tailwind 的 `shadow-lg` 或 `shadow-xl` 为卡片添加深度
+- **边框规范**：使用 `border-gray-800` 作为分割线和边框颜色
+- **卡片设计规范**：
+  - **主要信息卡片**：使用渐变背景或深色背景，大圆角，突出显示
+  - **数据展示卡片**：半透明背景，适中圆角，清晰的数据层次
+  - **功能按钮卡片**：圆形或圆角矩形，图标+文字组合
+  - **头像设计**：圆形头像，带边框或阴影效果
+
+#### 3.5 响应式设计规范
+- **必须同时考虑移动端和PC端的用户体验**
+- 使用移动优先（Mobile First）的设计理念
+- **如果用户要求的样式不合理，必须提示该排版在移动端或PC端可能存在的问题**
+- 确保关键功能在所有设备上都能正常使用
+- **断点规范**：
+  - `sm`: 640px+ (小型平板)
+  - `md`: 768px+ (平板)
+  - `lg`: 1024px+ (小型桌面)
+  - `xl`: 1280px+ (桌面)
+  - `2xl`: 1536px+ (大型桌面)
+
+```vue
+<!-- ✅ 完整响应式设计示例 -->
+<template>
+  <div class="min-h-screen bg-gray-950">
+    <!-- Web端布局 -->
+    <div class="hidden lg:flex h-screen">
+      <!-- 左侧导航 -->
+      <aside class="w-64 bg-gray-900 border-r border-gray-800">
+        <!-- 导航内容 -->
+      </aside>
+      
+      <!-- 右侧内容 -->
+      <main class="flex-1 overflow-auto">
+        <div class="p-6">
+          <!-- 网格布局 -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+              <!-- 卡片内容 -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    
+    <!-- 移动端布局 -->
+    <div class="lg:hidden flex flex-col h-screen">
+      <!-- 内容区 -->
+      <main class="flex-1 overflow-auto">
+        <div class="p-4">
+          <!-- 单列布局 -->
+          <div class="space-y-4">
+            <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+              <!-- 卡片内容 -->
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      <!-- 底部导航 -->
+      <nav class="h-16 bg-gray-900 border-t border-gray-800">
+        <!-- 导航菜单 -->
+      </nav>
+    </div>
+  </div>
+</template>
+```
+
+### 4. 样式开发规范
+
+#### 4.1 Tailwind CSS v4 使用规范
 - **完全使用 Tailwind CSS v4 进行样式开发**
 - 优先使用 Tailwind 的原子类
 - 充分利用 Tailwind 的响应式断点：`sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+- 严格遵循上述配色规范，使用指定的颜色类
 - 对于复杂样式，可以在 `<style>` 标签内使用 CSS
 
 ```vue
-<!-- ✅ 推荐写法 -->
+<!-- ✅ 推荐写法（符合设计规范） -->
 <template>
-  <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold text-gray-800">标题</h1>
+  <div class="flex items-center justify-between p-6 bg-gray-900 border border-gray-800 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-gray-100">标题</h1>
     <button class="custom-gradient-button">按钮</button>
   </div>
 </template>
 
 <style scoped>
 .custom-gradient-button {
-  @apply px-6 py-2 rounded-md text-white font-medium;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  @apply px-6 py-2 rounded-lg text-white font-medium bg-cyan-600 hover:bg-cyan-500 transition-colors;
+}
+
+/* 自定义渐变（如需要） */
+.custom-gradient {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
 }
 </style>
 ```
 
-#### 3.3 基础组件库使用规范
+#### 4.2 基础组件库使用规范
 - **优先使用 shadcn-vue 提供的 UI 组件**
 - 组件配置在 `components.json` 中
 - 基础颜色使用 `zinc`，样式使用 `new-york`
@@ -231,7 +390,7 @@ pnpm dlx shadcn-vue@latest add input
 pnpm dlx shadcn-vue@latest add dialog
 ```
 
-#### 3.4 动画组件库使用规范
+#### 4.3 动画组件库使用规范
 - **优先使用 vue-bits 动画组件库**
 - 官方文档：https://vue-bits.dev/
 - **如果需要的动画组件不存在，必须先提示用户添加**
@@ -243,7 +402,7 @@ npx jsrepo add https://vue-bits.dev/ui/Animations/FadeIn
 npx jsrepo add https://vue-bits.dev/ui/Animations/SlideIn
 ```
 
-#### 3.5 动画插件使用规范
+#### 4.4 动画插件使用规范
 - **优先使用 GSAP 和 motion-v 作为动画插件**
 - GSAP 用于复杂的时间轴动画和高性能动画
 - motion-v 用于 Vue 3 的声明式动画
@@ -270,9 +429,9 @@ function animateElement() {
 </template>
 ```
 
-### 4. TypeScript 使用规范
+### 5. TypeScript 使用规范
 
-#### 4.1 类型定义
+#### 5.1 类型定义
 - 为组件 props 定义明确的类型
 - 使用接口定义复杂数据结构
 - 充分利用 TypeScript 的类型推导
@@ -419,6 +578,219 @@ cd src-tauri && cargo tauri dev
 # Tauri 构建
 cd src-tauri && cargo tauri build
 ```
+
+## 设计参考规范
+
+### 运动健康页面设计规范
+
+基于现代运动健康应用的设计理念，本项目采用以下设计要点：
+
+#### 设计关键特征
+1. **现代扁平化设计**：简洁的界面，避免过度装饰
+2. **深色主题**：以深灰色背景为主，营造专业感
+3. **卡片式布局**：信息分组清晰，层次分明
+4. **数据可视化**：重视图表和数据的直观展示
+5. **圆角设计**：统一使用 8-12px 圆角，增加亲和力
+
+#### 具体实现要点
+
+**1. 布局结构**
+```vue
+<template>
+  <!-- 主容器：深色背景 -->
+  <div class="min-h-screen bg-gray-950 p-6">
+    <!-- 顶部问候区域 -->
+    <header class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-100">Hello, Alex!</h1>
+          <p class="text-gray-400">Ready for today's challenges?</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="p-2 bg-gray-800 rounded-lg text-gray-300">
+            <Icon name="lucide:search" />
+          </button>
+          <button class="px-4 py-2 bg-cyan-600 text-white rounded-lg">
+            Premium
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- 主要内容网格 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 左侧：数据卡片 -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- 运动数据卡片 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <!-- 卡片内容 -->
+        </div>
+      </div>
+      
+      <!-- 右侧：日历和活动 -->
+      <div class="space-y-6">
+        <!-- 日历卡片 -->
+        <div class="bg-cyan-600 rounded-xl p-6">
+          <!-- 日历内容 -->
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+**2. 数据展示卡片**
+```vue
+<template>
+  <!-- 数据指标卡片 -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <!-- 标题区域 -->
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-100">Physical Activity</h3>
+      <select class="bg-gray-800 text-gray-300 rounded-lg px-3 py-1 text-sm">
+        <option>Today</option>
+      </select>
+    </div>
+    
+    <!-- 数据指标网格 -->
+    <div class="grid grid-cols-3 gap-6">
+      <!-- 步数 -->
+      <div class="text-center">
+        <div class="mb-2">
+          <!-- 图表或图标 -->
+          <div class="w-12 h-12 bg-emerald-600 rounded-lg mx-auto flex items-center justify-center">
+            <Icon name="lucide:footprints" class="text-white" />
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-gray-100">8,745</div>
+        <div class="text-sm text-gray-400">Steps</div>
+        <div class="text-xs text-emerald-500 mt-1">Goal: 8,000</div>
+      </div>
+      
+      <!-- 卡路里 -->
+      <div class="text-center">
+        <div class="mb-2">
+          <div class="w-12 h-12 bg-orange-500 rounded-lg mx-auto flex items-center justify-center">
+            <Icon name="lucide:flame" class="text-white" />
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-gray-100">700</div>
+        <div class="text-sm text-gray-400">Calories burned</div>
+        <div class="text-xs text-orange-500 mt-1">Goal: 500</div>
+      </div>
+      
+      <!-- 活动时间 -->
+      <div class="text-center">
+        <div class="mb-2">
+          <div class="w-12 h-12 bg-blue-600 rounded-lg mx-auto flex items-center justify-center">
+            <Icon name="lucide:clock" class="text-white" />
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-gray-100">2h 45min</div>
+        <div class="text-sm text-gray-400">Activity time</div>
+        <div class="text-xs text-blue-500 mt-1">Goal: 2h 30min</div>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+**3. 进度环形图**
+```vue
+<template>
+  <!-- 睡眠时间卡片 -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-gray-100 mb-4">Sleep Time</h3>
+    <div class="flex items-center gap-4">
+      <!-- 环形进度条 -->
+      <div class="relative w-20 h-20">
+        <svg class="w-20 h-20 transform -rotate-90">
+          <!-- 背景圆环 -->
+          <circle cx="40" cy="40" r="36" stroke="#374151" stroke-width="8" fill="none" />
+          <!-- 进度圆环 -->
+          <circle 
+            cx="40" 
+            cy="40" 
+            r="36" 
+            stroke="#10b981" 
+            stroke-width="8" 
+            fill="none"
+            stroke-dasharray="226"
+            stroke-dashoffset="45"
+            stroke-linecap="round"
+          />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-lg font-bold text-gray-100">7.4h</span>
+        </div>
+      </div>
+      
+      <!-- 睡眠信息 -->
+      <div>
+        <div class="text-gray-100 font-medium">Last night</div>
+        <div class="text-gray-400 text-sm">Goal is 8 hours</div>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+**4. 活动列表**
+```vue
+<template>
+  <!-- 我的活动卡片 -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-100">My Activities</h3>
+      <span class="text-sm text-gray-400">You have 3 planned activities</span>
+    </div>
+    
+    <!-- 活动标签 -->
+    <div class="flex gap-2 mb-4">
+      <button class="px-3 py-1 bg-cyan-600 text-white rounded-full text-sm">All</button>
+      <button class="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-sm">Alone</button>
+      <button class="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-sm">With friends</button>
+    </div>
+    
+    <!-- 活动列表 -->
+    <div class="space-y-3">
+      <!-- 跑步活动 -->
+      <div class="flex items-center gap-3 p-3 bg-blue-600 rounded-lg">
+        <div class="flex -space-x-2">
+          <img class="w-8 h-8 rounded-full border-2 border-white" src="/avatar1.jpg" alt="">
+          <img class="w-8 h-8 rounded-full border-2 border-white" src="/avatar2.jpg" alt="">
+        </div>
+        <div class="flex-1">
+          <div class="text-white font-medium">Running</div>
+          <div class="text-blue-100 text-sm">7:00 AM</div>
+        </div>
+        <Icon name="lucide:chevron-right" class="text-white" />
+      </div>
+      
+      <!-- 健身房活动 -->
+      <div class="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+        <div class="flex -space-x-2">
+          <img class="w-8 h-8 rounded-full border-2 border-gray-600" src="/avatar3.jpg" alt="">
+        </div>
+        <div class="flex-1">
+          <div class="text-gray-100 font-medium">Gym</div>
+          <div class="text-gray-400 text-sm">8:00 PM</div>
+        </div>
+        <Icon name="lucide:chevron-right" class="text-gray-400" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+#### 设计实现注意事项
+
+1. **颜色使用**：严格按照配色规范，主要使用 `cyan-600` 作为强调色
+2. **间距统一**：卡片内边距使用 `p-6`，组件间距使用 `gap-6`
+3. **圆角一致**：所有卡片使用 `rounded-xl` (12px圆角)
+4. **文字层次**：标题用 `text-gray-100`，描述用 `text-gray-400`
+5. **交互反馈**：按钮要有 hover 状态，使用 `transition-colors`
+6. **图标使用**：统一使用 Lucide 图标库，保持视觉一致性
 
 ---
 

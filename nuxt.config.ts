@@ -19,9 +19,14 @@ export default defineNuxtConfig({
       pathPrefix: false,
       prefix: 'VB',
     },
+    {
+      path: '~/components/app',
+      pathPrefix: false,
+      prefix: 'App',
+    },
   ],
   devtools: { enabled: true },
-  css: ['~/assets/css/tailwind.css'],
+  css: ['~/assets/css/tailwind.css', '~/assets/css/scrollbar.css'],
   devServer: { host: process.env.TAURI_DEV_HOST || 'localhost' },
   compatibilityDate: '2025-07-15',
   vite: {
