@@ -1,4 +1,3 @@
-import type { Ref } from 'vue'
 import { readonly } from 'vue'
 
 // 消息类型定义
