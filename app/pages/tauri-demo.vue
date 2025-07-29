@@ -1,13 +1,8 @@
 <script setup lang="ts">
 // 使用新的 Composables API
 const services = useTauriServices()
-const database = useTauriDatabase()
 const store = useTauriStore()
 const notification = useTauriNotification()
-
-// 数据库相关状态
-const users = ref<any[]>([])
-const newUser = ref({ name: '', email: '' })
 
 // 存储相关状态
 const storeKey = ref('')
@@ -21,32 +16,6 @@ const notificationBody = ref('这是一个测试通知消息')
 // 初始化服务
 function initServices() {
   services.initializeServices()
-}
-
-// 数据库操作
-function addUser() {
-  database.insertUser(newUser.value.name, newUser.value.email)
-    .then(() => {
-      newUser.value = { name: '', email: '' }
-      loadUsers()
-    })
-    .catch(console.error)
-}
-
-function loadUsers() {
-  database.getUsers()
-    .then((result: any) => {
-      users.value = result as any[]
-    })
-    .catch(console.error)
-}
-
-function deleteUser(id: number) {
-  database.deleteUser(id)
-    .then(() => {
-      loadUsers()
-    })
-    .catch(console.error)
 }
 
 // 存储操作
@@ -147,67 +116,6 @@ onMounted(() => {
         >
           初始化服务
         </button>
-      </div>
-    </div>
-
-    <!-- 数据库操作 -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        数据库操作
-      </h2>
-      <div class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            v-model="newUser.name"
-            placeholder="用户名"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-          <input
-            v-model="newUser.email"
-            placeholder="邮箱"
-            type="email"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-        </div>
-        <div class="flex gap-2">
-          <button
-            :disabled="database.isLoading.value || !newUser.name || !newUser.email"
-            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="addUser"
-          >
-            添加用户
-          </button>
-          <button
-            :disabled="database.isLoading.value"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="loadUsers"
-          >
-            刷新列表
-          </button>
-        </div>
-        <div v-if="database.error.value" class="text-red-600 text-sm">
-          数据库错误: {{ database.error.value }}
-        </div>
-        <div v-if="users.length > 0" class="space-y-2">
-          <h3 class="font-medium">
-            用户列表:
-          </h3>
-          <div class="space-y-1">
-            <div
-              v-for="user in users"
-              :key="user.id"
-              class="flex items-center justify-between p-2 bg-gray-50 rounded"
-            >
-              <span>{{ user.name }} ({{ user.email }})</span>
-              <button
-                class="px-2 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
-                @click="deleteUser(user.id)"
-              >
-                删除
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
