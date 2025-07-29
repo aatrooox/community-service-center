@@ -3,6 +3,7 @@
 const services = useTauriServices()
 const store = useTauriStore()
 const notification = useTauriNotification()
+const sql = useTauriSQL()
 
 // 存储相关状态
 const storeKey = ref('')
@@ -12,6 +13,14 @@ const retrievedValue = ref<any>(null)
 // 通知相关状态
 const notificationTitle = ref('测试通知')
 const notificationBody = ref('这是一个测试通知消息')
+
+// SQL 相关状态
+const userName = ref('')
+const userEmail = ref('')
+const users = ref<any[]>([])
+const settingKey = ref('')
+const settingValue = ref('')
+const settings = ref<any[]>([])
 
 // 初始化服务
 function initServices() {
@@ -64,10 +73,111 @@ function sendErrorNotification() {
     .catch(console.error)
 }
 
+// SQL 操作
+function initDatabase() {
+  sql.initDatabase()
+    .then(() => {
+      notification.sendSuccessNotification('数据库初始化成功！')
+      loadUsers()
+      loadSettings()
+    })
+    .catch((error: any) => {
+      notification.sendErrorNotification('数据库初始化失败！')
+      console.error(error)
+    })
+}
+
+function addUser() {
+  if (!userName.value || !userEmail.value) {
+    notification.sendErrorNotification('请填写用户名和邮箱！')
+    return
+  }
+
+  sql.createUser(userName.value, userEmail.value)
+    .then(() => {
+      notification.sendSuccessNotification('用户添加成功！')
+      userName.value = ''
+      userEmail.value = ''
+      loadUsers()
+    })
+    .catch((error: any) => {
+      notification.sendErrorNotification('用户添加失败！')
+      console.error(error)
+    })
+}
+
+function loadUsers() {
+  sql.getAllUsers()
+    .then((result) => {
+      users.value = result
+    })
+    .catch(console.error)
+}
+
+function deleteUser(id: number) {
+  sql.deleteUser(id)
+    .then(() => {
+      notification.sendSuccessNotification('用户删除成功！')
+      loadUsers()
+    })
+    .catch((error: any) => {
+      notification.sendErrorNotification('用户删除失败！')
+      console.error(error)
+    })
+}
+
+function setSetting() {
+  if (!settingKey.value || !settingValue.value) {
+    notification.sendErrorNotification('请填写设置键和值！')
+    return
+  }
+
+  sql.setSetting(settingKey.value, settingValue.value)
+    .then(() => {
+      notification.sendSuccessNotification('设置保存成功！')
+      settingKey.value = ''
+      settingValue.value = ''
+      loadSettings()
+    })
+    .catch((error: any) => {
+      notification.sendErrorNotification('设置保存失败！')
+      console.error(error)
+    })
+}
+
+function loadSettings() {
+  sql.getAllSettings()
+    .then((result) => {
+      // getAllSettings返回的是Record<string, string>，需要转换为数组格式
+      settings.value = Object.entries(result).map(([key, value]) => ({ key, value }))
+    })
+    .catch(console.error)
+}
+
+function deleteSetting(key: string) {
+  sql.deleteSetting(key)
+    .then(() => {
+      notification.sendSuccessNotification('设置删除成功！')
+      loadSettings()
+    })
+    .catch((error: any) => {
+      notification.sendErrorNotification('设置删除失败！')
+      console.error(error)
+    })
+}
+
 // 页面加载时初始化
 onMounted(() => {
   // 自动初始化服务
   services.autoInit()
+
+  // 加载 SQL 数据
+  setTimeout(() => {
+    if (sql.isInitialized.value) {
+      loadUsers()
+      loadSettings()
+    }
+  }, 1000)
 })
 </script>
 
@@ -231,6 +341,148 @@ onMounted(() => {
         </div>
         <div v-if="notification.error.value" class="text-red-600 text-sm">
           通知错误: {{ notification.error.value }}
+        </div>
+      </div>
+    </div>
+
+    <!-- SQL 数据库操作 -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-4">
+        SQL 数据库操作
+      </h2>
+      <div class="space-y-6">
+        <!-- 数据库初始化 -->
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded">
+          <span>数据库状态:</span>
+          <span
+            :class="{
+              'text-green-600': sql.isInitialized.value,
+              'text-red-600': !sql.isInitialized.value,
+            }"
+          >
+            {{ sql.isInitialized.value ? '已初始化' : '未初始化' }}
+          </span>
+          <button
+            v-if="!sql.isInitialized.value"
+            :disabled="sql.isLoading.value"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            @click="initDatabase"
+          >
+            初始化数据库
+          </button>
+        </div>
+
+        <!-- 用户管理 -->
+        <div class="border-t pt-6">
+          <h3 class="text-lg font-medium mb-4">
+            用户管理
+          </h3>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                v-model="userName"
+                placeholder="用户名"
+                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <input
+                v-model="userEmail"
+                placeholder="邮箱"
+                type="email"
+                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+            <button
+              :disabled="sql.isLoading.value || !userName || !userEmail"
+              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              @click="addUser"
+            >
+              添加用户
+            </button>
+
+            <!-- 用户列表 -->
+            <div v-if="users.length > 0" class="mt-4">
+              <h4 class="font-medium mb-2">
+                用户列表:
+              </h4>
+              <div class="space-y-2">
+                <div
+                  v-for="user in users"
+                  :key="user.id"
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded"
+                >
+                  <div>
+                    <span class="font-medium">{{ user.name }}</span>
+                    <span class="text-gray-600 ml-2">{{ user.email }}</span>
+                  </div>
+                  <button
+                    :disabled="sql.isLoading.value"
+                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    @click="deleteUser(user.id)"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 设置管理 -->
+        <div class="border-t pt-6">
+          <h3 class="text-lg font-medium mb-4">
+            设置管理
+          </h3>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                v-model="settingKey"
+                placeholder="设置键"
+                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <input
+                v-model="settingValue"
+                placeholder="设置值"
+                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+            <button
+              :disabled="sql.isLoading.value || !settingKey || !settingValue"
+              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              @click="setSetting"
+            >
+              保存设置
+            </button>
+
+            <!-- 设置列表 -->
+            <div v-if="settings.length > 0" class="mt-4">
+              <h4 class="font-medium mb-2">
+                设置列表:
+              </h4>
+              <div class="space-y-2">
+                <div
+                  v-for="setting in settings"
+                  :key="setting.key"
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded"
+                >
+                  <div>
+                    <span class="font-medium">{{ setting.key }}</span>
+                    <span class="text-gray-600 ml-2">{{ setting.value }}</span>
+                  </div>
+                  <button
+                    :disabled="sql.isLoading.value"
+                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    @click="deleteSetting(setting.key)"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="sql.error.value" class="text-red-600 text-sm">
+          SQL 错误: {{ sql.error.value }}
         </div>
       </div>
     </div>

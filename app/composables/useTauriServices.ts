@@ -12,6 +12,7 @@ export function useTauriServices() {
 
   const { initStore, setItem } = useTauriStore()
   const { sendSuccessNotification, sendErrorNotification } = useTauriNotification()
+  const { initDatabase } = useTauriSQL()
 
   const initializeServices = async () => {
     if (isInitialized.value)
@@ -24,7 +25,11 @@ export function useTauriServices() {
     try {
       // 初始化存储
       await initStore()
-      initProgress.value = 50
+      initProgress.value = 33
+
+      // 初始化数据库
+      await initDatabase()
+      initProgress.value = 66
 
       // 设置一些默认配置
       await setItem('app_version', '1.0.0')
