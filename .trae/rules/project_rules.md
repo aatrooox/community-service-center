@@ -456,6 +456,464 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 ```
 
+## 数据架构设计
+
+### 1. 混合存储架构
+
+本项目采用**本地优先 + 远程同步**的混合架构设计，确保应用在离线状态下完全可用，同时支持远程数据同步和扩展功能。
+
+#### 1.1 架构原则
+- **本地优先**：默认使用本地 SQLite 数据库，无需网络连接即可完整使用
+- **可选同步**：支持配置远程服务器进行数据同步
+- **渐进增强**：远程服务提供额外功能，不影响核心本地功能
+- **数据一致性**：本地和远程数据保持同步，支持冲突解决
+
+#### 1.2 数据分层设计
+
+```typescript
+// 数据层架构
+interface DataLayer {
+  // 本地存储层
+  local: {
+    sqlite: SQLiteDatabase
+    cache: LocalCache
+  }
+  
+  // 远程服务层
+  remote?: {
+    api: RemoteAPIClient
+    sync: SyncManager
+  }
+  
+  // 数据访问层
+  repository: DataRepository
+}
+```
+
+#### 1.3 数据类型分类
+
+**本地数据（Local-First Data）**
+- 个人信息（用户资料、偏好设置）
+- 个人待办事项
+- 本地笔记和草稿
+- 应用配置和主题设置
+- 离线缓存数据
+
+**同步数据（Sync Data）**
+- 跨设备共享的待办事项
+- 用户生成的内容（如果需要备份）
+- 应用设置同步
+
+**远程数据（Remote Data）**
+- 动态和文章内容
+- 社区数据
+- 实时通知
+- 共享资源
+
+### 2. 技术实现方案
+
+#### 2.1 本地存储实现
+
+```rust
+// Tauri 后端 - 本地数据库管理
+use tauri_plugin_sql::{Migration, MigrationKind};
+
+#[tauri::command]
+async fn init_local_database() -> Result<(), String> {
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create_users_table",
+            sql: "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);",
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "create_todos_table",
+            sql: "CREATE TABLE todos (id INTEGER PRIMARY KEY, title TEXT, completed BOOLEAN, user_id INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);",
+            kind: MigrationKind::Up,
+        },
+    ];
+    
+    // 执行迁移
+    Ok(())
+}
+```
+
+#### 2.2 远程服务配置
+
+```typescript
+// 前端 - 远程服务配置
+interface RemoteConfig {
+  enabled: boolean
+  baseUrl: string
+  apiKey?: string
+  syncInterval: number // 分钟
+  features: {
+    contentSync: boolean
+    dynamicFeed: boolean
+    notifications: boolean
+  }
+}
+
+// 配置管理
+const useRemoteConfig = () => {
+  const config = ref<RemoteConfig>({
+    enabled: false,
+    baseUrl: '',
+    syncInterval: 30,
+    features: {
+      contentSync: false,
+      dynamicFeed: false,
+      notifications: false
+    }
+  })
+  
+  const saveConfig = async (newConfig: RemoteConfig) => {
+    await invoke('save_remote_config', { config: newConfig })
+    config.value = newConfig
+  }
+  
+  return { config, saveConfig }
+}
+```
+
+#### 2.3 数据访问层设计
+
+```typescript
+// 统一数据访问接口
+interface DataRepository<T> {
+  // 本地操作
+  getLocal(id: string): Promise<T | null>
+  saveLocal(data: T): Promise<void>
+  deleteLocal(id: string): Promise<void>
+  listLocal(filter?: any): Promise<T[]>
+  
+  // 远程操作（可选）
+  getRemote?(id: string): Promise<T | null>
+  saveRemote?(data: T): Promise<void>
+  syncWithRemote?(): Promise<void>
+}
+
+// 具体实现示例 - 待办事项
+class TodoRepository implements DataRepository<Todo> {
+  async getLocal(id: string): Promise<Todo | null> {
+    return await invoke('get_todo_local', { id })
+  }
+  
+  async saveLocal(todo: Todo): Promise<void> {
+    await invoke('save_todo_local', { todo })
+  }
+  
+  async syncWithRemote(): Promise<void> {
+    const remoteConfig = await invoke('get_remote_config')
+    if (!remoteConfig.enabled) return
+    
+    // 执行同步逻辑
+    const localTodos = await this.listLocal()
+    const remoteTodos = await this.getRemoteList()
+    
+    // 合并和冲突解决
+    await this.mergeData(localTodos, remoteTodos)
+  }
+}
+```
+
+#### 2.4 同步机制设计
+
+```typescript
+// 同步管理器
+class SyncManager {
+  private syncInterval: number = 30 * 60 * 1000 // 30分钟
+  private isOnline: boolean = navigator.onLine
+  
+  async startAutoSync() {
+    if (!this.isOnline) return
+    
+    setInterval(async () => {
+      try {
+        await this.performSync()
+      } catch (error) {
+        console.error('同步失败:', error)
+      }
+    }, this.syncInterval)
+  }
+  
+  async performSync() {
+    const repositories = [
+      new TodoRepository(),
+      new UserRepository(),
+      // 其他需要同步的数据仓库
+    ]
+    
+    for (const repo of repositories) {
+      if (repo.syncWithRemote) {
+        await repo.syncWithRemote()
+      }
+    }
+  }
+  
+  // 冲突解决策略
+  resolveConflict<T>(local: T, remote: T): T {
+    // 实现冲突解决逻辑
+    // 例如：最后修改时间优先、用户选择、合并等
+    return local // 简化示例
+  }
+}
+```
+
+### 3. 配置界面设计
+
+#### 3.1 远程服务配置页面
+
+```vue
+<template>
+  <div class="bg-gray-950 min-h-screen p-6">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-2xl font-bold text-gray-100 mb-8">远程服务配置</h1>
+      
+      <!-- 基础配置 -->
+      <Card class="mb-6">
+        <CardHeader>
+          <CardTitle class="text-gray-100">服务器设置</CardTitle>
+          <CardDescription class="text-gray-400">
+            配置远程服务器以启用数据同步和扩展功能
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="flex items-center space-x-2">
+            <Switch v-model:checked="config.enabled" />
+            <Label class="text-gray-300">启用远程服务</Label>
+          </div>
+          
+          <div v-if="config.enabled" class="space-y-4">
+            <div>
+              <Label class="text-gray-300">服务器地址</Label>
+              <Input 
+                v-model="config.baseUrl" 
+                placeholder="https://api.example.com"
+                class="bg-gray-800 border-gray-700 text-gray-100"
+              />
+            </div>
+            
+            <div>
+              <Label class="text-gray-300">API 密钥（可选）</Label>
+              <Input 
+                v-model="config.apiKey" 
+                type="password"
+                placeholder="输入 API 密钥"
+                class="bg-gray-800 border-gray-700 text-gray-100"
+              />
+            </div>
+            
+            <div>
+              <Label class="text-gray-300">同步间隔（分钟）</Label>
+              <Input 
+                v-model.number="config.syncInterval" 
+                type="number"
+                min="5"
+                max="1440"
+                class="bg-gray-800 border-gray-700 text-gray-100"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <!-- 功能配置 -->
+      <Card class="mb-6" v-if="config.enabled">
+        <CardHeader>
+          <CardTitle class="text-gray-100">功能设置</CardTitle>
+          <CardDescription class="text-gray-400">
+            选择要启用的远程功能
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <Label class="text-gray-300">内容同步</Label>
+              <p class="text-sm text-gray-500">同步待办事项和个人数据</p>
+            </div>
+            <Switch v-model:checked="config.features.contentSync" />
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <Label class="text-gray-300">动态推送</Label>
+              <p class="text-sm text-gray-500">获取最新动态和文章</p>
+            </div>
+            <Switch v-model:checked="config.features.dynamicFeed" />
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <Label class="text-gray-300">实时通知</Label>
+              <p class="text-sm text-gray-500">接收推送通知</p>
+            </div>
+            <Switch v-model:checked="config.features.notifications" />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <!-- 操作按钮 -->
+      <div class="flex gap-4">
+        <Button @click="saveConfiguration" class="bg-cyan-600 hover:bg-cyan-500">
+          保存配置
+        </Button>
+        <Button @click="testConnection" variant="outline" v-if="config.enabled">
+          测试连接
+        </Button>
+        <Button @click="performManualSync" variant="outline" v-if="config.enabled">
+          立即同步
+        </Button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+const { config, saveConfig } = useRemoteConfig()
+const { performSync } = useSyncManager()
+
+async function saveConfiguration() {
+  try {
+    await saveConfig(config.value)
+    // 显示成功提示
+  } catch (error) {
+    // 显示错误提示
+  }
+}
+
+async function testConnection() {
+  try {
+    const result = await invoke('test_remote_connection', { 
+      baseUrl: config.value.baseUrl,
+      apiKey: config.value.apiKey 
+    })
+    // 显示连接结果
+  } catch (error) {
+    // 显示连接失败
+  }
+}
+
+async function performManualSync() {
+  try {
+    await performSync()
+    // 显示同步成功
+  } catch (error) {
+    // 显示同步失败
+  }
+}
+</script>
+```
+
+### 4. 数据库设计
+
+#### 4.1 本地数据库表结构
+
+```sql
+-- 用户表
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE,
+  avatar_url TEXT,
+  preferences TEXT, -- JSON 格式存储用户偏好
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_sync_at DATETIME
+);
+
+-- 待办事项表
+CREATE TABLE todos (
+  id TEXT PRIMARY KEY, -- UUID
+  title TEXT NOT NULL,
+  description TEXT,
+  completed BOOLEAN DEFAULT FALSE,
+  priority INTEGER DEFAULT 0,
+  due_date DATETIME,
+  user_id INTEGER REFERENCES users(id),
+  remote_id TEXT, -- 远程服务器上的 ID
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_sync_at DATETIME,
+  is_deleted BOOLEAN DEFAULT FALSE
+);
+
+-- 应用配置表
+CREATE TABLE app_config (
+  key TEXT PRIMARY KEY,
+  value TEXT, -- JSON 格式
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 同步日志表
+CREATE TABLE sync_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  table_name TEXT NOT NULL,
+  operation TEXT NOT NULL, -- 'create', 'update', 'delete'
+  record_id TEXT NOT NULL,
+  status TEXT NOT NULL, -- 'pending', 'success', 'failed'
+  error_message TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 5. API 接口设计
+
+#### 5.1 远程 API 接口规范
+
+```typescript
+// API 接口定义
+interface RemoteAPI {
+  // 认证
+  auth: {
+    login(credentials: LoginCredentials): Promise<AuthToken>
+    refresh(token: string): Promise<AuthToken>
+    logout(): Promise<void>
+  }
+  
+  // 数据同步
+  sync: {
+    getTodos(lastSync?: Date): Promise<Todo[]>
+    uploadTodos(todos: Todo[]): Promise<SyncResult>
+    getConflicts(): Promise<Conflict[]>
+    resolveConflict(conflictId: string, resolution: any): Promise<void>
+  }
+  
+  // 内容获取
+  content: {
+    getDynamics(page: number, limit: number): Promise<Dynamic[]>
+    getArticles(page: number, limit: number): Promise<Article[]>
+    getNotifications(): Promise<Notification[]>
+  }
+}
+
+// 同步结果
+interface SyncResult {
+  success: boolean
+  conflicts: Conflict[]
+  updated: number
+  created: number
+  deleted: number
+}
+```
+
+### 6. 实施建议
+
+#### 6.1 开发阶段
+1. **第一阶段**：实现完整的本地功能，确保离线可用
+2. **第二阶段**：添加远程配置界面和基础 API 集成
+3. **第三阶段**：实现数据同步机制和冲突解决
+4. **第四阶段**：添加高级功能（动态推送、通知等）
+
+#### 6.2 技术要点
+- 使用 `tauri-plugin-sql` 管理本地 SQLite 数据库
+- 使用 `tauri-plugin-store` 存储应用配置
+- 实现乐观锁机制处理并发更新
+- 使用增量同步减少网络传输
+- 实现离线队列，网络恢复时自动同步
+
 ## Tauri 开发规范
 
 ### 1. 配置规范

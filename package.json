@@ -21,6 +21,7 @@
     "@nuxt/eslint": "1.7.0",
     "@nuxt/icon": "1.15.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@tauri-apps/plugin-http": "~2.5.1",
     "@tauri-apps/plugin-notification": "^2.3.0",
     "@tauri-apps/plugin-sql": "^2.3.0",
     "@tauri-apps/plugin-store": "^2.3.0",
@@ -44,5 +45,10 @@
     "@tauri-apps/cli": "^2.7.1",
     "eslint-plugin-vuejs-accessibility": "^2.4.1",
     "husky": "^9.1.7"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "0.19.12"
+    }
   }
 }
