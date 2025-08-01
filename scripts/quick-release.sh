@@ -54,23 +54,15 @@ echo "✅ 版本号更新完成！"
 
 if [ "$AUTO_MODE" = true ]; then
     # 自动模式：执行所有步骤
-    echo "🔄 自动执行后续步骤..."
+    # echo "🔄 自动执行后续步骤..."
     
     # 获取新版本号
     NEW_VERSION=$(node -p "require('./package.json').version")
     echo "📦 新版本: v$NEW_VERSION"
     
-    # Git 操作
-    echo "📝 提交更改..."
-    git add .
-    git commit -m "chore: release v$NEW_VERSION"
-    
-    echo "⬆️ 推送到远程仓库..."
-    git push
-    
-    echo "🏷️ 创建 Git 标签..."
-    git tag "v$NEW_VERSION"
-    git push origin "v$NEW_VERSION"
+    # # Git 操作 - changelogen 已自动创建提交和标签
+    # echo "⬆️ 推送到远程仓库..."
+    # git push
     
     echo "🎉 自动发布完成！"
     echo "📋 GitHub Actions 将自动构建并创建 Release"
