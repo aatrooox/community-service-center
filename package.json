@@ -15,7 +15,9 @@
     "release": "pnpm release:patch",
     "release:patch": "npx changelogen@latest --patch --release --push",
     "release:minor": "npx changelogen@latest --minor --release --push",
-    "release:major": "npx changelogen@latest --major --release --push"
+    "release:major": "npx changelogen@latest --major --release --push",
+    "version:update": "node scripts/update-version.js",
+    "quick-release": "./scripts/quick-release.sh"
   },
   "dependencies": {
     "@nuxt/eslint": "1.7.0",

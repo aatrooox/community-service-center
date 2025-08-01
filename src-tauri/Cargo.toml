@@ -1,10 +1,10 @@
 [package]
 name = "community-service-center"
-version = "0.1.0"
-description = "A Tauri App"
+version = "0.1.1"
+description = "Community Service Center - A modern desktop application for community management"
 authors = [ "gnakzz" ]
-license = ""
-repository = ""
+license = "MIT"
+repository = "https://github.com/zzstudio/community-service-center"
 edition = "2021"
 rust-version = "1.88.0"
 
