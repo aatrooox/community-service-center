@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.15
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.14...v0.1.15)
+
+### 🩹 Fixes
+
+- 添加 --release 参数到发布脚本 ([7bb6192](https://github.com/aatrooox/community-service-center/commit/7bb6192))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.14
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.13...v0.1.14)
