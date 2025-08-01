@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.21
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.20...v0.1.21)
+
+### 🩹 Fixes
+
+- Andriod build param ([11390cb](https://github.com/aatrooox/community-service-center/commit/11390cb))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.20
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.19...v0.1.20)
