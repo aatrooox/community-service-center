@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.5
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.3...v0.1.5)
+
+### 🚀 Enhancements
+
+- 优化发版流程 ([46fa179](https://github.com/aatrooox/community-service-center/commit/46fa179))
+
+### 🩹 Fixes
+
+- Tauri 配置问题 ([c7c4ec6](https://github.com/aatrooox/community-service-center/commit/c7c4ec6))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.1
 
 
