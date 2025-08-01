@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v0.1.27
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.26...v0.1.27)
+
+### 🏡 Chore
+
+- 再次测试 ([55a39b3](https://github.com/aatrooox/community-service-center/commit/55a39b3))
+- Update Tauri version for patch release ([b3da6ae](https://github.com/aatrooox/community-service-center/commit/b3da6ae))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.26
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.25...v0.1.26)
