@@ -42,7 +42,7 @@ export function useDynamicIsland() {
       content: message,
       icon: options.icon || 'lucide:bell',
       type: 'notification',
-      duration: options.duration || 3,
+      duration: options.duration || 2,
       showProgress: options.showProgress ?? true,
     }
 
@@ -92,7 +92,7 @@ export function useDynamicIsland() {
    * @param message 消息内容
    * @param duration 显示时长（秒）
    */
-  function showError(message: string, duration = 5) {
+  function showError(message: string, duration = 3) {
     showNotification(message, {
       title: '错误',
       icon: 'lucide:x-circle',
@@ -106,7 +106,7 @@ export function useDynamicIsland() {
    * @param message 消息内容
    * @param duration 显示时长（秒）
    */
-  function showWarning(message: string, duration = 4) {
+  function showWarning(message: string, duration = 3) {
     showNotification(message, {
       title: '警告',
       icon: 'lucide:alert-triangle',

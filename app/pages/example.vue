@@ -15,6 +15,9 @@ const {
   clearQueue,
 } = useDynamicIsland()
 
+// 使用 Toast composable
+const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast, info: showInfoToast } = useToast()
+
 // 简单通知
 function showSimpleNotification() {
   showNotification('这是一条简单的通知消息', {
@@ -64,6 +67,23 @@ function showLoadingMessage() {
   showLoading('正在加载，请稍候...', 3)
 }
 
+// Toast 测试函数
+function testSuccessToast() {
+  showSuccessToast('操作成功完成！')
+}
+
+function testErrorToast() {
+  showErrorToast('操作失败，请重试')
+}
+
+function testWarningToast() {
+  showWarningToast('请注意：此操作不可撤销')
+}
+
+function testInfoToast() {
+  showInfoToast('这是一条信息提示')
+}
+
 // 注意：灵动岛组件现在使用全局状态管理，无需手动设置引用
 </script>
 
@@ -71,7 +91,7 @@ function showLoadingMessage() {
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
     <div class="max-w-4xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-800 mb-8">
-        灵动岛 Composable 示例页面
+        测试演示页面
       </h1>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- 通知消息 -->
@@ -148,10 +168,58 @@ function showLoadingMessage() {
             </button>
           </div>
         </div>
+
+        <!-- Toast 消息 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-4 text-orange-600">
+            Toast 消息
+          </h2>
+          <div class="space-y-3">
+            <button
+              class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+              @click="testSuccessToast"
+            >
+              成功 Toast
+            </button>
+            <button
+              class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+              @click="testErrorToast"
+            >
+              错误 Toast
+            </button>
+            <button
+              class="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors"
+              @click="testWarningToast"
+            >
+              警告 Toast
+            </button>
+            <button
+              class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+              @click="testInfoToast"
+            >
+              信息 Toast
+            </button>
+          </div>
+        </div>
+
+        <!-- 环境检测演示 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-4 text-teal-600">
+            环境检测演示
+          </h2>
+          <div class="space-y-3">
+            <NuxtLink
+              to="/demo-environment"
+              class="block w-full bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg transition-colors text-center"
+            >
+              环境检测页面
+            </NuxtLink>
+          </div>
+        </div>
       </div>
 
-      <!-- 返回首页 -->
-      <div class="mt-8 text-center">
+      <!-- 导航 -->
+      <div class="mt-8 text-center space-x-4">
         <NuxtLink
           to="/"
           class="inline-flex items-center px-6 py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors"
