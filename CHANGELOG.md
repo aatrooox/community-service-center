@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.1.24
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.23...v0.1.24)
+
+### 🩹 Fixes
+
+- 测试release 和构建app ([ad810c4](https://github.com/aatrooox/community-service-center/commit/ad810c4))
+- 优化构建流程 ([33a7110](https://github.com/aatrooox/community-service-center/commit/33a7110))
+
+### 🏡 Chore
+
+- Update tauri version ([5e9282c](https://github.com/aatrooox/community-service-center/commit/5e9282c))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.23
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.22...v0.1.23)
