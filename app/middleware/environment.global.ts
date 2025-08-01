@@ -5,7 +5,7 @@
 
 import { useDynamicIsland } from '~/composables/useDynamicIsland'
 import { useGlobalEnvironment } from '~/composables/useEnvironment'
-import { FALLBACK_MESSAGE, getRouteConfig } from '~/config/routes'
+import { getRouteConfig } from '~/config/routes'
 
 export default defineNuxtRouteMiddleware((to) => {
   // 只在客户端执行
