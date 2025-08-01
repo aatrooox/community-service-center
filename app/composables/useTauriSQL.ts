@@ -178,7 +178,7 @@ export class SQLService {
     const db = this.ensureDB()
     await db.execute(
       'INSERT INTO todo_categories (id, name, description, color, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [category.id, category.name, category.description, category.color, category.icon, category.sortOrder, category.createdAt, category.updatedAt]
+      [category.id, category.name, category.description, category.color, category.icon, category.sortOrder, category.createdAt, category.updatedAt],
     )
   }
 
@@ -197,7 +197,7 @@ export class SQLService {
     const db = this.ensureDB()
     await db.execute(
       'INSERT INTO todo_tags (id, name, parent_id, level, color, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [tag.id, tag.name, tag.parentId, tag.level, tag.color, tag.sortOrder, tag.createdAt, tag.updatedAt]
+      [tag.id, tag.name, tag.parentId, tag.level, tag.color, tag.sortOrder, tag.createdAt, tag.updatedAt],
     )
   }
 
@@ -216,15 +216,15 @@ export class SQLService {
     const db = this.ensureDB()
     await db.execute(
       'INSERT INTO todos (id, title, description, completed, priority, due_date, category_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [todo.id, todo.title, todo.description, todo.completed ? 1 : 0, todo.priority, todo.dueDate, todo.categoryId, todo.createdAt, todo.updatedAt]
+      [todo.id, todo.title, todo.description, todo.completed ? 1 : 0, todo.priority, todo.dueDate, todo.categoryId, todo.createdAt, todo.updatedAt],
     )
-    
+
     // 添加标签关联
     if (todo.tagIds && todo.tagIds.length > 0) {
       for (const tagId of todo.tagIds) {
         await db.execute(
           'INSERT INTO todo_tag_relations (todo_id, tag_id) VALUES (?, ?)',
-          [todo.id, tagId]
+          [todo.id, tagId],
         )
       }
     }
@@ -238,22 +238,22 @@ export class SQLService {
       LEFT JOIN todo_categories c ON t.category_id = c.id
       ORDER BY t.priority DESC, t.created_at DESC
     `) as any[]
-    
+
     // 获取每个待办的标签并转换数据格式
     for (const todo of todos) {
       // 转换布尔值：SQLite的0/1转换为JavaScript的true/false
       todo.completed = Boolean(todo.completed)
-      
+
       // 构建分类对象
       if (todo.category_name) {
         todo.category = {
           id: todo.category_id,
           name: todo.category_name,
           color: todo.category_color,
-          icon: todo.category_icon
+          icon: todo.category_icon,
         }
       }
-      
+
       const tags = await db.select(`
         SELECT tg.* FROM todo_tags tg
         JOIN todo_tag_relations tr ON tg.id = tr.tag_id
@@ -261,13 +261,13 @@ export class SQLService {
         ORDER BY tg.level ASC, tg.sort_order ASC
       `, [todo.id]) as any[]
       todo.tags = tags
-      
+
       // 清理临时字段
       delete todo.category_name
       delete todo.category_color
       delete todo.category_icon
     }
-    
+
     return todos
   }
 
@@ -275,7 +275,7 @@ export class SQLService {
     const db = this.ensureDB()
     const fields = []
     const values = []
-    
+
     if (updates.title !== undefined) {
       fields.push('title = ?')
       values.push(updates.title)
@@ -300,14 +300,14 @@ export class SQLService {
       fields.push('category_id = ?')
       values.push(updates.categoryId)
     }
-    
+
     fields.push('updated_at = ?')
     values.push(new Date().toISOString())
     values.push(id)
-    
+
     await db.execute(
       `UPDATE todos SET ${fields.join(', ')} WHERE id = ?`,
-      values
+      values,
     )
   }
 
@@ -692,7 +692,7 @@ export function useTauriSQL() {
     getSetting,
     getAllSettings,
     deleteSetting,
-    
+
     // 待办相关方法
     createTodoCategory,
     getAllTodoCategories,
@@ -704,7 +704,7 @@ export function useTauriSQL() {
     getAllTodos,
     updateTodo,
     deleteTodo,
-    
+
     autoInit,
   }
 }

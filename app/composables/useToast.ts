@@ -86,7 +86,7 @@ export function useToast() {
       success: string | ((data: T) => string)
       error: string | ((error: any) => string)
     },
-    options?: ToastOptions
+    // options?: ToastOptions,
   ) {
     return toast.promise(promise, msgs)
   }
@@ -117,7 +117,7 @@ export function useToast() {
     dismiss,
     dismissAll,
     // 直接暴露 toast 对象，以防需要使用其他方法
-    toast
+    toast,
   }
 }
 

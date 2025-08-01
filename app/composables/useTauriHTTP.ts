@@ -56,7 +56,7 @@ export interface RequestOptions extends RequestInit {
  */
 export class TauriHTTPClient {
   private config: HTTPConfig
-  
+
   constructor(config: HTTPConfig = {}) {
     this.config = {
       timeout: 10000,
@@ -65,46 +65,48 @@ export class TauriHTTPClient {
       headers: {
         'Content-Type': 'application/json',
       },
-      ...config
+      ...config,
     }
   }
-  
+
   /**
    * 构建完整 URL
    */
   private buildURL(url: string, baseURL?: string): string {
     const base = baseURL || this.config.baseURL || ''
-    
-    if (!base) return url
-    if (url.startsWith('http://') || url.startsWith('https://')) return url
-    
+
+    if (!base)
+      return url
+    if (url.startsWith('http://') || url.startsWith('https://'))
+      return url
+
     return `${base.replace(/\/$/, '')}/${url.replace(/^\//, '')}`
   }
-  
+
   /**
    * 合并请求头
    */
   private mergeHeaders(options?: RequestOptions): Record<string, string> {
     return Object.assign({} as Record<string, string>, {
       ...this.config.headers,
-      ...options?.headers
+      ...options?.headers,
     })
   }
-  
+
   /**
    * 创建 AbortController 用于超时控制
    */
   private createTimeoutController(timeout?: number): AbortController {
     const controller = new AbortController()
     const timeoutMs = timeout || this.config.timeout || 10000
-    
+
     setTimeout(() => {
       controller.abort()
     }, timeoutMs)
-    
+
     return controller
   }
-  
+
   /**
    * 执行 HTTP 请求
    */
@@ -113,82 +115,79 @@ export class TauriHTTPClient {
     const headers = this.mergeHeaders(options)
     const retries = options.retries ?? this.config.retries ?? 3
     const retryDelay = options.retryDelay ?? this.config.retryDelay ?? 1000
-    
+
     let lastError: HTTPError | null = null
-    
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const controller = this.createTimeoutController(options.timeout)
-        
+
         const response = await fetch(fullURL, {
           ...options,
           headers,
-          signal: controller.signal
+          signal: controller.signal,
         })
-        
+
         // 解析响应数据
         let data: T
         const contentType = response.headers.get('content-type') || ''
-        
+
         if (contentType.includes('application/json')) {
           data = await response.json()
-        } else if (contentType.includes('text/')) {
+        }
+        else if (contentType.includes('text/')) {
           data = await response.text() as T
-        } else {
+        }
+        else {
           data = await response.arrayBuffer() as T
         }
-        
+
         // 构建响应对象
         const httpResponse: HTTPResponse<T> = {
           data,
           status: response.status,
           statusText: response.statusText,
           headers: Object.fromEntries(response.headers.entries()),
-          ok: response.ok
+          ok: response.ok,
         }
-        
+
         // 检查响应状态
         if (!response.ok) {
-          throw {
-            message: `HTTP ${response.status}: ${response.statusText}`,
-            status: response.status,
-            statusText: response.statusText,
-            url: fullURL
-          } as HTTPError
+          throw new Error('error')
         }
-        
+
         return httpResponse
-        
-      } catch (error: any) {
+      }
+      catch (error: any) {
         lastError = {
           message: error.message || 'Request failed',
           status: error.status,
           statusText: error.statusText,
-          url: fullURL
+          url: fullURL,
         }
-        
+
         // 如果是最后一次尝试，抛出错误
         if (attempt === retries) {
           throw lastError
         }
-        
+
         // 等待后重试
         if (retryDelay > 0) {
           await new Promise(resolve => setTimeout(resolve, retryDelay))
         }
       }
     }
-    
+
     throw lastError
   }
-  
+
   /**
    * GET 请求
    */
   async get<T = any>(url: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<HTTPResponse<T>> {
     return this.request<T>(url, { ...options, method: 'GET' })
   }
-  
+
   /**
    * POST 请求
    */
@@ -196,7 +195,7 @@ export class TauriHTTPClient {
     const body = data ? JSON.stringify(data) : undefined
     return this.request<T>(url, { ...options, method: 'POST', body })
   }
-  
+
   /**
    * PUT 请求
    */
@@ -204,14 +203,14 @@ export class TauriHTTPClient {
     const body = data ? JSON.stringify(data) : undefined
     return this.request<T>(url, { ...options, method: 'PUT', body })
   }
-  
+
   /**
    * DELETE 请求
    */
   async delete<T = any>(url: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<HTTPResponse<T>> {
     return this.request<T>(url, { ...options, method: 'DELETE' })
   }
-  
+
   /**
    * PATCH 请求
    */
@@ -233,14 +232,16 @@ let globalHTTPClient: TauriHTTPClient | null = null
  */
 export function useTauriHTTP(config?: HTTPConfig) {
   // 创建或获取 HTTP 客户端实例
-  const httpClient = config ? new TauriHTTPClient(config) : (
-    globalHTTPClient || (globalHTTPClient = new TauriHTTPClient())
-  )
-  
+  const httpClient = config
+    ? new TauriHTTPClient(config)
+    : (
+        globalHTTPClient || (globalHTTPClient = new TauriHTTPClient())
+      )
+
   // 响应式状态
   const loading = ref(false)
   const error = ref<HTTPError | null>(null)
-  
+
   /**
    * 执行请求的包装函数
    */
@@ -248,77 +249,77 @@ export function useTauriHTTP(config?: HTTPConfig) {
     try {
       loading.value = true
       error.value = null
-      
+
       const response = await requestFn()
       return response
-      
-    } catch (err: any) {
+    }
+    catch (err: any) {
       error.value = err
       console.error('HTTP 请求失败:', err)
       return null
-      
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
-  
+
   /**
    * GET 请求
    */
   async function get<T = any>(url: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
     return executeRequest(() => httpClient.get<T>(url, options))
   }
-  
+
   /**
    * POST 请求
    */
   async function post<T = any>(url: string, data?: any, options?: Omit<RequestOptions, 'method'>) {
     return executeRequest(() => httpClient.post<T>(url, data, options))
   }
-  
+
   /**
    * PUT 请求
    */
   async function put<T = any>(url: string, data?: any, options?: Omit<RequestOptions, 'method'>) {
     return executeRequest(() => httpClient.put<T>(url, data, options))
   }
-  
+
   /**
    * DELETE 请求
    */
   async function del<T = any>(url: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
     return executeRequest(() => httpClient.delete<T>(url, options))
   }
-  
+
   /**
    * PATCH 请求
    */
   async function patch<T = any>(url: string, data?: any, options?: Omit<RequestOptions, 'method'>) {
     return executeRequest(() => httpClient.patch<T>(url, data, options))
   }
-  
+
   /**
    * 自定义请求
    */
   async function request<T = any>(url: string, options?: RequestOptions) {
     return executeRequest(() => httpClient.request<T>(url, options))
   }
-  
+
   /**
    * 清除错误状态
    */
   function clearError() {
     error.value = null
   }
-  
+
   return {
     // HTTP 客户端实例
     httpClient,
-    
+
     // 响应式状态
     loading: readonly(loading),
     error: readonly(error),
-    
+
     // HTTP 方法
     get,
     post,
@@ -326,9 +327,9 @@ export function useTauriHTTP(config?: HTTPConfig) {
     delete: del,
     patch,
     request,
-    
+
     // 工具方法
-    clearError
+    clearError,
   }
 }
 
@@ -356,7 +357,8 @@ export async function httpGet<T = any>(url: string, options?: Omit<RequestOption
     const client = globalHTTPClient || new TauriHTTPClient()
     const response = await client.get<T>(url, options)
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('HTTP GET 失败:', error)
     return null
   }
@@ -370,7 +372,8 @@ export async function httpPost<T = any>(url: string, data?: any, options?: Omit<
     const client = globalHTTPClient || new TauriHTTPClient()
     const response = await client.post<T>(url, data, options)
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('HTTP POST 失败:', error)
     return null
   }
