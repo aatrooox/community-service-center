@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.14
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.13...v0.1.14)
+
+### 🩹 Fixes
+
+- 安卓构建流程 ([1640ff4](https://github.com/aatrooox/community-service-center/commit/1640ff4))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.13
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.11...v0.1.13)
