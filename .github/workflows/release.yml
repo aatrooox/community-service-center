@@ -165,7 +165,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: 'Community Service Center ${{ github.ref_name }}'
+          name: '早早集市社区服务 ${{ github.ref_name }}'
           body: |
             ## 📦 下载
 
@@ -177,7 +177,7 @@ jobs:
           files: |
             ./artifacts/macos/*.dmg
             ./artifacts/android/**/*.apk
-          draft: true
+          draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
