@@ -824,20 +824,62 @@ CREATE TABLE users (
   last_sync_at DATETIME
 );
 
--- 待办事项表
+-- 待办事项分类表（一级分类）
+CREATE TABLE todo_categories (
+  id TEXT PRIMARY KEY, -- UUID
+  name TEXT NOT NULL, -- 分类名称，如："xxx小程序开发"
+  description TEXT,
+  color TEXT, -- 分类颜色标识
+  icon TEXT, -- 分类图标
+  user_id INTEGER REFERENCES users(id),
+  sort_order INTEGER DEFAULT 0, -- 排序顺序
+  remote_id TEXT, -- 远程服务器上的 ID
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_sync_at DATETIME,
+  is_deleted BOOLEAN DEFAULT FALSE
+);
+
+-- 标签表（支持多级标签）
+CREATE TABLE todo_tags (
+  id TEXT PRIMARY KEY, -- UUID
+  name TEXT NOT NULL, -- 标签名称，如："首页"、"UI界面"、"接口对接"
+  parent_id TEXT REFERENCES todo_tags(id), -- 父标签ID，支持多级结构
+  level INTEGER DEFAULT 1, -- 标签层级：1为一级标签，2为二级标签，以此类推
+  color TEXT, -- 标签颜色
+  user_id INTEGER REFERENCES users(id),
+  sort_order INTEGER DEFAULT 0, -- 同级标签排序
+  remote_id TEXT, -- 远程服务器上的 ID
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_sync_at DATETIME,
+  is_deleted BOOLEAN DEFAULT FALSE
+);
+
+-- 待办事项表（修改版）
 CREATE TABLE todos (
   id TEXT PRIMARY KEY, -- UUID
   title TEXT NOT NULL,
   description TEXT,
   completed BOOLEAN DEFAULT FALSE,
-  priority INTEGER DEFAULT 0,
+  priority INTEGER DEFAULT 0, -- 优先级：1-低，2-中，3-高，4-紧急
   due_date DATETIME,
+  category_id TEXT REFERENCES todo_categories(id), -- 所属分类
   user_id INTEGER REFERENCES users(id),
   remote_id TEXT, -- 远程服务器上的 ID
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_sync_at DATETIME,
   is_deleted BOOLEAN DEFAULT FALSE
+);
+
+-- 待办事项标签关联表（多对多关系）
+CREATE TABLE todo_tag_relations (
+  id TEXT PRIMARY KEY, -- UUID
+  todo_id TEXT NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+  tag_id TEXT NOT NULL REFERENCES todo_tags(id) ON DELETE CASCADE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(todo_id, tag_id) -- 防止重复关联
 );
 
 -- 应用配置表
@@ -864,6 +906,67 @@ CREATE TABLE sync_logs (
 #### 5.1 远程 API 接口规范
 
 ```typescript
+// 待办事项分类接口
+interface TodoCategory {
+  id: string // UUID
+  name: string // 分类名称，如："xxx小程序开发"
+  description?: string
+  color?: string // 分类颜色标识
+  icon?: string // 分类图标
+  userId: number
+  sortOrder: number // 排序顺序
+  remoteId?: string // 远程服务器上的 ID
+  createdAt: string
+  updatedAt: string
+  lastSyncAt?: string
+  isDeleted: boolean
+}
+
+// 标签接口（支持多级标签）
+interface TodoTag {
+  id: string // UUID
+  name: string // 标签名称，如："首页"、"UI界面"、"接口对接"
+  parentId?: string // 父标签ID，支持多级结构
+  level: number // 标签层级：1为一级标签，2为二级标签，以此类推
+  color?: string // 标签颜色
+  userId: number
+  sortOrder: number // 同级标签排序
+  remoteId?: string // 远程服务器上的 ID
+  createdAt: string
+  updatedAt: string
+  lastSyncAt?: string
+  isDeleted: boolean
+  children?: TodoTag[] // 子标签（用于前端展示树形结构）
+}
+
+// 待办事项接口（修改版）
+interface Todo {
+  id: string // UUID
+  title: string
+  description?: string
+  completed: boolean
+  priority: number // 优先级：1-低，2-中，3-高，4-紧急
+  dueDate?: string
+  categoryId?: string // 所属分类
+  userId: number
+  remoteId?: string // 远程服务器上的 ID
+  createdAt: string
+  updatedAt: string
+  lastSyncAt?: string
+  isDeleted: boolean
+  // 关联数据（用于前端展示）
+  category?: TodoCategory
+  tags?: TodoTag[]
+}
+
+// 待办事项标签关联接口
+interface TodoTagRelation {
+  id: string // UUID
+  todoId: string
+  tagId: string
+  createdAt: string
+}
+
 // API 接口定义
 interface RemoteAPI {
   // 认证
@@ -877,6 +980,10 @@ interface RemoteAPI {
   sync: {
     getTodos(lastSync?: Date): Promise<Todo[]>
     uploadTodos(todos: Todo[]): Promise<SyncResult>
+    getCategories(lastSync?: Date): Promise<TodoCategory[]>
+    uploadCategories(categories: TodoCategory[]): Promise<SyncResult>
+    getTags(lastSync?: Date): Promise<TodoTag[]>
+    uploadTags(tags: TodoTag[]): Promise<SyncResult>
     getConflicts(): Promise<Conflict[]>
     resolveConflict(conflictId: string, resolution: any): Promise<void>
   }
@@ -897,22 +1004,268 @@ interface SyncResult {
   created: number
   deleted: number
 }
+
+// 待办事项查询参数
+interface TodoQueryParams {
+  categoryId?: string // 按分类筛选
+  tagIds?: string[] // 按标签筛选（支持多个标签）
+  completed?: boolean // 按完成状态筛选
+  priority?: number // 按优先级筛选
+  dueDateFrom?: string // 截止日期范围开始
+  dueDateTo?: string // 截止日期范围结束
+  keyword?: string // 关键词搜索（标题和描述）
+  sortBy?: 'created_at' | 'updated_at' | 'due_date' | 'priority' // 排序字段
+  sortOrder?: 'asc' | 'desc' // 排序方向
+  page?: number // 分页页码
+  limit?: number // 每页数量
+}
+
+// 待办事项统计信息
+interface TodoStats {
+  total: number // 总数
+  completed: number // 已完成
+  pending: number // 待完成
+  overdue: number // 已逾期
+  byCategory: Record<string, number> // 按分类统计
+  byPriority: Record<number, number> // 按优先级统计
+  byTag: Record<string, number> // 按标签统计
+}
 ```
 
-### 6. 实施建议
+### 6. 待办事项分类和标签系统使用示例
 
-#### 6.1 开发阶段
+#### 6.1 数据结构示例
+
+```typescript
+// 示例：创建"xxx小程序开发"分类
+const category: TodoCategory = {
+  id: 'cat-001',
+  name: 'xxx小程序开发',
+  description: '小程序项目相关的所有待办事项',
+  color: '#0891b2', // cyan-600
+  icon: 'smartphone',
+  userId: 1,
+  sortOrder: 1,
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+  isDeleted: false
+}
+
+// 示例：创建多级标签结构
+const tags: TodoTag[] = [
+  // 一级标签：首页
+  {
+    id: 'tag-001',
+    name: '首页',
+    level: 1,
+    color: '#06b6d4', // cyan-500
+    userId: 1,
+    sortOrder: 1,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    isDeleted: false
+  },
+  // 二级标签：UI界面
+  {
+    id: 'tag-002',
+    name: 'UI界面',
+    parentId: 'tag-001', // 父标签为"首页"
+    level: 2,
+    color: '#3b82f6', // blue-500
+    userId: 1,
+    sortOrder: 1,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    isDeleted: false
+  },
+  // 二级标签：接口对接
+  {
+    id: 'tag-003',
+    name: '接口对接',
+    parentId: 'tag-001', // 父标签为"首页"
+    level: 2,
+    color: '#10b981', // emerald-500
+    userId: 1,
+    sortOrder: 2,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    isDeleted: false
+  }
+]
+
+// 示例：创建待办事项
+const todo: Todo = {
+  id: 'todo-001',
+  title: '设计首页轮播图组件',
+  description: '实现首页轮播图的UI设计和交互效果',
+  completed: false,
+  priority: 3, // 高优先级
+  dueDate: '2024-01-15T23:59:59Z',
+  categoryId: 'cat-001', // 属于"xxx小程序开发"分类
+  userId: 1,
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+  isDeleted: false,
+  // 关联的标签：首页 > UI界面
+  tags: [tags[0], tags[1]] // 首页 + UI界面
+}
+```
+
+#### 6.2 查询使用示例
+
+```typescript
+// 查询某个分类下的所有待办事项
+const todosByCategory = await queryTodos({
+  categoryId: 'cat-001',
+  sortBy: 'priority',
+  sortOrder: 'desc'
+})
+
+// 查询包含特定标签的待办事项
+const todosByTags = await queryTodos({
+  tagIds: ['tag-002'], // UI界面标签
+  completed: false,
+  sortBy: 'due_date',
+  sortOrder: 'asc'
+})
+
+// 复合查询：特定分类 + 多个标签 + 优先级
+const complexQuery = await queryTodos({
+  categoryId: 'cat-001',
+  tagIds: ['tag-001', 'tag-002'], // 首页 + UI界面
+  priority: 3, // 高优先级
+  completed: false
+})
+
+// 获取统计信息
+const stats = await getTodoStats({
+  categoryId: 'cat-001'
+})
+// 结果示例：
+// {
+//   total: 25,
+//   completed: 10,
+//   pending: 15,
+//   overdue: 3,
+//   byCategory: { 'cat-001': 25 },
+//   byPriority: { 1: 5, 2: 8, 3: 10, 4: 2 },
+//   byTag: { 'tag-001': 15, 'tag-002': 8, 'tag-003': 7 }
+// }
+```
+
+#### 6.3 UI组件设计建议
+
+```vue
+<!-- 分类选择器组件 -->
+<template>
+  <div class="category-selector">
+    <h3 class="text-lg font-semibold text-gray-100 mb-4">项目分类</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div 
+        v-for="category in categories" 
+        :key="category.id"
+        class="bg-gray-900 border border-gray-800 rounded-lg p-4 cursor-pointer hover:border-cyan-500 transition-colors"
+        :class="{ 'border-cyan-500 bg-cyan-900/20': selectedCategoryId === category.id }"
+        @click="selectCategory(category.id)"
+      >
+        <div class="flex items-center gap-3">
+          <div 
+            class="w-4 h-4 rounded-full"
+            :style="{ backgroundColor: category.color }"
+          />
+          <Icon :name="category.icon" class="w-5 h-5 text-gray-400" />
+          <span class="text-gray-100 font-medium">{{ category.name }}</span>
+        </div>
+        <p class="text-gray-400 text-sm mt-2">{{ category.description }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- 多级标签选择器组件 -->
+<template>
+  <div class="tag-selector">
+    <h3 class="text-lg font-semibold text-gray-100 mb-4">标签筛选</h3>
+    <div class="space-y-3">
+      <div v-for="parentTag in parentTags" :key="parentTag.id">
+        <!-- 一级标签 -->
+        <div class="flex items-center gap-2 mb-2">
+          <input 
+            :id="`tag-${parentTag.id}`"
+            v-model="selectedTagIds"
+            :value="parentTag.id"
+            type="checkbox"
+            class="rounded border-gray-600 bg-gray-800 text-cyan-600"
+          >
+          <label 
+            :for="`tag-${parentTag.id}`"
+            class="text-gray-100 font-medium cursor-pointer"
+          >
+            {{ parentTag.name }}
+          </label>
+        </div>
+        
+        <!-- 二级标签 -->
+        <div v-if="parentTag.children?.length" class="ml-6 space-y-2">
+          <div 
+            v-for="childTag in parentTag.children" 
+            :key="childTag.id"
+            class="flex items-center gap-2"
+          >
+            <input 
+              :id="`tag-${childTag.id}`"
+              v-model="selectedTagIds"
+              :value="childTag.id"
+              type="checkbox"
+              class="rounded border-gray-600 bg-gray-800 text-cyan-600"
+            >
+            <label 
+              :for="`tag-${childTag.id}`"
+              class="text-gray-300 cursor-pointer"
+            >
+              {{ childTag.name }}
+            </label>
+            <div 
+              class="w-3 h-3 rounded-full ml-auto"
+              :style="{ backgroundColor: childTag.color }"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+### 7. 实施建议
+
+#### 7.1 开发阶段
 1. **第一阶段**：实现完整的本地功能，确保离线可用
+   - 创建数据库表结构
+   - 实现基础的CRUD操作
+   - 开发分类和标签管理界面
 2. **第二阶段**：添加远程配置界面和基础 API 集成
+   - 实现分类和标签的同步机制
+   - 添加冲突解决策略
 3. **第三阶段**：实现数据同步机制和冲突解决
+   - 完善增量同步逻辑
+   - 实现多设备数据一致性
 4. **第四阶段**：添加高级功能（动态推送、通知等）
+   - 基于分类和标签的智能提醒
+   - 数据统计和可视化
 
-#### 6.2 技术要点
+#### 7.2 技术要点
 - 使用 `tauri-plugin-sql` 管理本地 SQLite 数据库
 - 使用 `tauri-plugin-store` 存储应用配置
 - 实现乐观锁机制处理并发更新
 - 使用增量同步减少网络传输
 - 实现离线队列，网络恢复时自动同步
+- **分类和标签最佳实践**：
+  - 分类用于项目级别的组织（如："xxx小程序开发"、"yyy网站重构"）
+  - 标签用于功能模块的细分（如："首页 > UI界面"、"用户中心 > 权限管理"）
+  - 支持标签的多级嵌套，但建议不超过3级
+  - 为分类和标签提供颜色标识，提升视觉识别度
+  - 实现标签的智能推荐功能，基于历史使用记录
 
 ## Tauri 开发规范
 

@@ -45,6 +45,63 @@ export class SQLService {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `)
+
+    // 创建待办分类表
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS todo_categories (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        color TEXT NOT NULL DEFAULT '#0891b2',
+        icon TEXT NOT NULL DEFAULT 'folder',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
+    // 创建待办标签表
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS todo_tags (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        parent_id TEXT,
+        level INTEGER NOT NULL DEFAULT 1,
+        color TEXT NOT NULL DEFAULT '#06b6d4',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_id) REFERENCES todo_tags(id) ON DELETE CASCADE
+      )
+    `)
+
+    // 创建待办事项表
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS todos (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        completed BOOLEAN NOT NULL DEFAULT 0,
+        priority INTEGER NOT NULL DEFAULT 2,
+        due_date DATETIME,
+        category_id TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES todo_categories(id) ON DELETE SET NULL
+      )
+    `)
+
+    // 创建待办事项标签关联表
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS todo_tag_relations (
+        todo_id TEXT NOT NULL,
+        tag_id TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (todo_id, tag_id),
+        FOREIGN KEY (todo_id) REFERENCES todos(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES todo_tags(id) ON DELETE CASCADE
+      )
+    `)
   }
 
   // 用户操作
@@ -114,6 +171,149 @@ export class SQLService {
   async deleteSetting(key: string): Promise<void> {
     const db = this.ensureDB()
     await db.execute('DELETE FROM settings WHERE key = ?', [key])
+  }
+
+  // 待办分类操作
+  async createTodoCategory(category: any): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute(
+      'INSERT INTO todo_categories (id, name, description, color, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [category.id, category.name, category.description, category.color, category.icon, category.sortOrder, category.createdAt, category.updatedAt]
+    )
+  }
+
+  async getAllTodoCategories(): Promise<any[]> {
+    const db = this.ensureDB()
+    return await db.select('SELECT * FROM todo_categories ORDER BY sort_order ASC, created_at DESC')
+  }
+
+  async deleteTodoCategory(id: string): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM todo_categories WHERE id = ?', [id])
+  }
+
+  // 待办标签操作
+  async createTodoTag(tag: any): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute(
+      'INSERT INTO todo_tags (id, name, parent_id, level, color, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [tag.id, tag.name, tag.parentId, tag.level, tag.color, tag.sortOrder, tag.createdAt, tag.updatedAt]
+    )
+  }
+
+  async getAllTodoTags(): Promise<any[]> {
+    const db = this.ensureDB()
+    return await db.select('SELECT * FROM todo_tags ORDER BY level ASC, sort_order ASC, created_at DESC')
+  }
+
+  async deleteTodoTag(id: string): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM todo_tags WHERE id = ?', [id])
+  }
+
+  // 待办事项操作
+  async createTodo(todo: any): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute(
+      'INSERT INTO todos (id, title, description, completed, priority, due_date, category_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [todo.id, todo.title, todo.description, todo.completed ? 1 : 0, todo.priority, todo.dueDate, todo.categoryId, todo.createdAt, todo.updatedAt]
+    )
+    
+    // 添加标签关联
+    if (todo.tagIds && todo.tagIds.length > 0) {
+      for (const tagId of todo.tagIds) {
+        await db.execute(
+          'INSERT INTO todo_tag_relations (todo_id, tag_id) VALUES (?, ?)',
+          [todo.id, tagId]
+        )
+      }
+    }
+  }
+
+  async getAllTodos(): Promise<any[]> {
+    const db = this.ensureDB()
+    const todos = await db.select(`
+      SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+      FROM todos t
+      LEFT JOIN todo_categories c ON t.category_id = c.id
+      ORDER BY t.priority DESC, t.created_at DESC
+    `) as any[]
+    
+    // 获取每个待办的标签并转换数据格式
+    for (const todo of todos) {
+      // 转换布尔值：SQLite的0/1转换为JavaScript的true/false
+      todo.completed = Boolean(todo.completed)
+      
+      // 构建分类对象
+      if (todo.category_name) {
+        todo.category = {
+          id: todo.category_id,
+          name: todo.category_name,
+          color: todo.category_color,
+          icon: todo.category_icon
+        }
+      }
+      
+      const tags = await db.select(`
+        SELECT tg.* FROM todo_tags tg
+        JOIN todo_tag_relations tr ON tg.id = tr.tag_id
+        WHERE tr.todo_id = ?
+        ORDER BY tg.level ASC, tg.sort_order ASC
+      `, [todo.id]) as any[]
+      todo.tags = tags
+      
+      // 清理临时字段
+      delete todo.category_name
+      delete todo.category_color
+      delete todo.category_icon
+    }
+    
+    return todos
+  }
+
+  async updateTodo(id: string, updates: any): Promise<void> {
+    const db = this.ensureDB()
+    const fields = []
+    const values = []
+    
+    if (updates.title !== undefined) {
+      fields.push('title = ?')
+      values.push(updates.title)
+    }
+    if (updates.description !== undefined) {
+      fields.push('description = ?')
+      values.push(updates.description)
+    }
+    if (updates.completed !== undefined) {
+      fields.push('completed = ?')
+      values.push(updates.completed ? 1 : 0)
+    }
+    if (updates.priority !== undefined) {
+      fields.push('priority = ?')
+      values.push(updates.priority)
+    }
+    if (updates.dueDate !== undefined) {
+      fields.push('due_date = ?')
+      values.push(updates.dueDate)
+    }
+    if (updates.categoryId !== undefined) {
+      fields.push('category_id = ?')
+      values.push(updates.categoryId)
+    }
+    
+    fields.push('updated_at = ?')
+    values.push(new Date().toISOString())
+    values.push(id)
+    
+    await db.execute(
+      `UPDATE todos SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    )
+  }
+
+  async deleteTodo(id: string): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM todos WHERE id = ?', [id])
   }
 
   // 关闭数据库连接
@@ -296,6 +496,179 @@ export function useTauriSQL() {
     }
   }
 
+  // 待办分类操作
+  const createTodoCategory = async (category: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.createTodoCategory(category)
+      console.log('分类创建成功:', category.name)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '创建分类失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAllTodoCategories = async () => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const categories = await sqlService.getAllTodoCategories()
+      return categories
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取分类列表失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteTodoCategory = async (id: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.deleteTodoCategory(id)
+      console.log('分类删除成功:', id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '删除分类失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  // 待办标签操作
+  const createTodoTag = async (tag: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.createTodoTag(tag)
+      console.log('标签创建成功:', tag.name)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '创建标签失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAllTodoTags = async () => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const tags = await sqlService.getAllTodoTags()
+      return tags
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取标签列表失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteTodoTag = async (id: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.deleteTodoTag(id)
+      console.log('标签删除成功:', id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '删除标签失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  // 待办事项操作
+  const createTodo = async (todo: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.createTodo(todo)
+      console.log('待办创建成功:', todo.title)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '创建待办失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAllTodos = async () => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const todos = await sqlService.getAllTodos()
+      return todos
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取待办列表失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const updateTodo = async (id: string, updates: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.updateTodo(id, updates)
+      console.log('待办更新成功:', id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '更新待办失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteTodo = async (id: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.deleteTodo(id)
+      console.log('待办删除成功:', id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '删除待办失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
   // 自动初始化（可选）
   const autoInit = async () => {
     if (import.meta.client && !isInitialized.value) {
@@ -319,6 +692,19 @@ export function useTauriSQL() {
     getSetting,
     getAllSettings,
     deleteSetting,
+    
+    // 待办相关方法
+    createTodoCategory,
+    getAllTodoCategories,
+    deleteTodoCategory,
+    createTodoTag,
+    getAllTodoTags,
+    deleteTodoTag,
+    createTodo,
+    getAllTodos,
+    updateTodo,
+    deleteTodo,
+    
     autoInit,
   }
 }
