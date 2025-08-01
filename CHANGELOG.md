@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.7
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.5...v0.1.7)
+
+### 🩹 Fixes
+
+- Identifier 字符问题 ([ef22cd1](https://github.com/aatrooox/community-service-center/commit/ef22cd1))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.5
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.3...v0.1.5)
