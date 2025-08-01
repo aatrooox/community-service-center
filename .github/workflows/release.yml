@@ -16,24 +16,37 @@ jobs:
         include:
           - platform: macos-latest
             args: --target universal-apple-darwin
-          - platform: ubuntu-20.04
-            args: --target aarch64-linux-android
+          - platform: ubuntu-22.04
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-      - name: Rust setup
+      # === macOS 依赖 ===
+      - name: Install Rust (macOS)
+        if: matrix.platform == 'macos-latest'
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || 'aarch64-linux-android' }}
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      # === Linux 依赖 ===
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install Rust (Linux/Android)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -54,106 +67,102 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Setup Android NDK (Android only)
-        if: matrix.platform == 'ubuntu-20.04'
+      # === Android 环境配置 ===
+      - name: Setup Android NDK (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r25c
+          ndk-version: r26d
           add-to-path: false
 
-      - name: Setup Android environment (Android only)
-        if: matrix.platform == 'ubuntu-20.04'
+      - name: Set Android env vars (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
-          echo "NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
 
-      - name: Setup Java (Android only)
-        if: matrix.platform == 'ubuntu-20.04'
+      - name: Setup Java (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK (Android only)
-        if: matrix.platform == 'ubuntu-20.04'
+      - name: Setup Android SDK (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
         uses: android-actions/setup-android@v3
 
-      - name: Install Tauri Android targets (Android only)
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          rustup target add aarch64-linux-android
+      - name: Add Android Rust target (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: rustup target add aarch64-linux-android
 
-      - name: Build the app (macOS)
+      # === 构建 macOS DMG ===
+      - name: Build macOS app
         if: matrix.platform == 'macos-latest'
         run: pnpm tauri build ${{ matrix.args }}
 
-      - name: Upload macOS artifacts
+      - name: Upload macOS DMG
         if: matrix.platform == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
           path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
 
+      # === 构建 Android APK ===
       - name: Build Android APK
-        if: matrix.platform == 'ubuntu-20.04'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
-          echo "Starting Android build..."
           pnpm tauri android init
-          echo "Android init completed, starting build..."
-          pnpm tauri android build --apk --target aarch64
-          echo "Android build completed"
-          ls -la src-tauri/gen/android/app/build/outputs/apk/ || echo "APK output directory not found"
+          pnpm tauri android build --apk --split-per-abi
+        env:
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
 
       - name: Upload Android APK
-        if: matrix.platform == 'ubuntu-20.04'
+        if: matrix.platform == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: |
-            src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
-            src-tauri/gen/android/app/build/outputs/apk/*/release/*.apk
+            src-tauri/gen/android/app/build/outputs/apk/**/*.apk
 
+  # === 创建 Release ===
   release:
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download macOS artifacts
+      - name: Download macOS DMG
         uses: actions/download-artifact@v4
         with:
           name: macos-dmg
-          path: ./macos/
+          path: ./artifacts/macos/
 
-      - name: Download Android artifacts
+      - name: Download Android APK
         uses: actions/download-artifact@v4
         with:
           name: android-apk
-          path: ./android/
+          path: ./artifacts/android/
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: 'Community Service Center ${{ github.ref_name }}'
+          name: "Community Service Center ${{ github.ref_name }}"
           body: |
-            ## 📦 下载安装包
+            ## 📦 下载
 
-            ### macOS (Universal)
-            - 支持 Intel 和 Apple Silicon 芯片
-            - 下载 `.dmg` 文件并安装
+            - **macOS (Universal)**: `.dmg` 文件
+            - **Android (arm64-v8a)**: `.apk` 文件
 
-            ### Android (ARM64)
-            - 支持 ARM64 架构的 Android 设备
-            - 下载 `.apk` 文件并安装
-
-            ## 🔄 更新日志
-            请查看 [CHANGELOG.md](https://github.com/zzstudio/community-service-center/blob/main/CHANGELOG.md) 了解详细更新内容。
+            ## 📝 更新日志
+            请查看 [CHANGELOG.md](https://github.com/your-org/your-repo/blob/main/CHANGELOG.md)
           files: |
-            ./macos/*.dmg
-            ./android/*.apk
+            ./artifacts/macos/*.dmg
+            ./artifacts/android/**/*.apk
           draft: true
           prerelease: false
         env:
