@@ -36,6 +36,11 @@ fi
 echo "🔧 更新 Tauri 版本号..."
 node scripts/update-tauri-version.js $VERSION_TYPE
 
+# 提交 Tauri 版本更新
+echo "💾 提交 Tauri 版本更新..."
+git add src-tauri/tauri.conf.json src-tauri/Cargo.toml
+git commit -m "chore: update Tauri version for $VERSION_TYPE release"
+
 # 使用 changelogen 更新 package.json 版本号和生成 changelog
 echo "📝 使用 changelogen 更新版本号和生成 changelog..."
 case $VERSION_TYPE in
