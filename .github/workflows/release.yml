@@ -135,15 +135,15 @@ jobs:
           name: 'Community Service Center ${{ github.ref_name }}'
           body: |
             ## 📦 下载安装包
-            
+
             ### macOS (Universal)
             - 支持 Intel 和 Apple Silicon 芯片
             - 下载 `.dmg` 文件并安装
-            
+
             ### Android (ARM64)
             - 支持 ARM64 架构的 Android 设备
             - 下载 `.apk` 文件并安装
-            
+
             ## 🔄 更新日志
             请查看 [CHANGELOG.md](https://github.com/zzstudio/community-service-center/blob/main/CHANGELOG.md) 了解详细更新内容。
           draft: true
