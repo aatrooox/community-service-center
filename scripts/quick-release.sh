@@ -32,8 +32,12 @@ if [ "$AUTO_MODE" = true ]; then
     echo "🤖 自动模式已启用"
 fi
 
-# 使用 changelogen 更新版本号和生成 changelog
-echo "📝 更新版本号和生成 changelog..."
+# 先更新 Tauri 相关文件的版本号
+echo "🔧 更新 Tauri 版本号..."
+node scripts/update-tauri-version.js $VERSION_TYPE
+
+# 使用 changelogen 更新 package.json 版本号和生成 changelog
+echo "📝 使用 changelogen 更新版本号和生成 changelog..."
 case $VERSION_TYPE in
     "patch")
         pnpm release:patch

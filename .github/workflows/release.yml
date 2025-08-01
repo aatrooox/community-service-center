@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
 
 jobs:
   build:
@@ -130,7 +129,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           pnpm tauri android init
-          pnpm tauri android build --apk --split-per-abi
+          pnpm tauri android build --apk --target aarch64-linux-android
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
@@ -174,7 +173,7 @@ jobs:
             - **Android (arm64-v8a)**: `.apk` 文件
 
             ## 📝 更新日志
-            请查看 [CHANGELOG.md](https://github.com/your-org/your-repo/blob/main/CHANGELOG.md)
+            请查看 [CHANGELOG.md](https://github.com/aatrooox/community-service-center/blob/main/CHANGELOG.md)
           files: |
             ./artifacts/macos/*.dmg
             ./artifacts/android/**/*.apk
