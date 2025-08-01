@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.1.22
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.21...v0.1.22)
+
+### 🩹 Fixes
+
+- 自发发布流程修复 ([efca649](https://github.com/aatrooox/community-service-center/commit/efca649))
+- 安卓打包配置 ([422051b](https://github.com/aatrooox/community-service-center/commit/422051b))
+- Draft false ([d288d3b](https://github.com/aatrooox/community-service-center/commit/d288d3b))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.21
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.20...v0.1.21)
