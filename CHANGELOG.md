@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.11
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.9...v0.1.11)
+
+### 🩹 Fixes
+
+- 修改构建流程 ([d735a2f](https://github.com/aatrooox/community-service-center/commit/d735a2f))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.9
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.7...v0.1.9)
