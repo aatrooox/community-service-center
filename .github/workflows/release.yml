@@ -129,7 +129,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           pnpm tauri android init
-          pnpm tauri android build --apk --target aarch64-linux-android
+          pnpm tauri android build --apk --target aarch64
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
