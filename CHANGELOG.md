@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.9
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.7...v0.1.9)
+
+### 🩹 Fixes
+
+- 修复构建流程 ([108058b](https://github.com/aatrooox/community-service-center/commit/108058b))
+
+### 🏡 Chore
+
+- Eslint ([26694d6](https://github.com/aatrooox/community-service-center/commit/26694d6))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.7
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.5...v0.1.7)
