@@ -16,7 +16,7 @@ node scripts/update-version.js $VERSION_TYPE
 
 # 暂存版本文件
 echo "📦 暂存版本文件..."
-git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
+git add package.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json
 
 # 使用项目的发版命令
 echo "🚀 执行发版命令..."

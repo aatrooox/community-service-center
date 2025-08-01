@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  build:
     permissions:
       contents: write
     strategy:
@@ -88,16 +88,14 @@ jobs:
 
       - name: Build the app (macOS)
         if: matrix.platform == 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm tauri build ${{ matrix.args }}
+
+      - name: Upload macOS artifacts
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Community Service Center v__VERSION__
-          releaseBody: See the assets to download this version and install.
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
+          name: macos-dmg
+          path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
 
       - name: Build Android APK
         if: matrix.platform == 'ubuntu-20.04'
@@ -112,16 +110,46 @@ jobs:
           name: android-apk
           path: src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
 
-      - name: Create Release (Android)
-        if: matrix.platform == 'ubuntu-20.04'
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: ./macos/
+
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: ./android/
+
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: 'Community Service Center v${{ github.ref_name }}'
-          body: See the assets to download this version and install.
+          name: 'Community Service Center ${{ github.ref_name }}'
+          body: |
+            ## 📦 下载安装包
+            
+            ### macOS (Universal)
+            - 支持 Intel 和 Apple Silicon 芯片
+            - 下载 `.dmg` 文件并安装
+            
+            ### Android (ARM64)
+            - 支持 ARM64 架构的 Android 设备
+            - 下载 `.apk` 文件并安装
+            
+            ## 🔄 更新日志
+            请查看 [CHANGELOG.md](https://github.com/zzstudio/community-service-center/blob/main/CHANGELOG.md) 了解详细更新内容。
           draft: true
           prerelease: false
           files: |
-            src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
+            ./macos/*.dmg
+            ./android/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
