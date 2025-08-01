@@ -12,6 +12,9 @@ const {
   showPersistentMessage,
 } = useDynamicIsland()
 
+// 使用导航栏 composable
+const { setTransparent, clearNavBar } = useNavBar()
+
 // 灵动岛组件引用
 // const dynamicIslandRef = ref()
 
@@ -130,6 +133,8 @@ function animateProgress(element: string, value: number) {
 }
 
 onMounted(() => {
+  // 设置透明导航栏，与渐变背景融合
+  setTransparent(true, true)
   // 设置灵动岛引用
   // setDynamicIslandRef(dynamicIslandRef)
 
@@ -142,6 +147,11 @@ onMounted(() => {
   // setTimeout(() => {
   //   showNotification()
   // }, 2000)
+})
+
+// 页面卸载时清除导航栏设置
+onUnmounted(() => {
+  clearNavBar()
 })
 
 // 格式化数字

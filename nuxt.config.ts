@@ -25,7 +25,7 @@ export default defineNuxtConfig({
       prefix: 'App',
     },
   ],
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   css: ['~/assets/css/tailwind.css', '~/assets/css/scrollbar.css'],
   devServer: { host: process.env.TAURI_DEV_HOST || 'localhost' },
   compatibilityDate: '2025-07-15',

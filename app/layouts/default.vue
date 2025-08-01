@@ -13,10 +13,18 @@ useHead({
 
 <template>
   <div class="min-h-screen bg-gray-950">
+    <!-- 自定义导航栏 -->
+    <AppNavBar />
     <!-- 全局灵动岛组件 -->
     <AppDynamicIsland />
     <!-- 主要内容区域 -->
-    <main class="pb-20">
+    <main
+      class="pb-20 overflow-y-auto"
+      :style="{
+        paddingTop: `calc(4rem + env(safe-area-inset-top))`,
+        height: `calc(100vh - 4rem - env(safe-area-inset-bottom))`,
+      }"
+    >
       <slot />
     </main>
 
