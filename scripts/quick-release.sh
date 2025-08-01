@@ -130,5 +130,5 @@ print_info "GitHub Actions 将自动构建以下平台的安装包:"
 echo "  • macOS DMG (Universal Binary)"
 echo "  • Android APK (ARM64)"
 echo
-print_info "查看构建进度: https://github.com/zzstudio/community-service-center/actions"
-print_info "发布页面: https://github.com/zzstudio/community-service-center/releases"
+print_info "查看构建进度: https://github.com/aatrooox/community-service-center/actions"
+print_info "发布页面: https://github.com/aatrooox/community-service-center/releases"

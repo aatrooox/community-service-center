@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Community Service Center",
   "version": "0.1.2",
-  "identifier": "com.zzstudio.community_service_center",
+  "identifier": "com.zzaoclub.community_service_center",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:4577",

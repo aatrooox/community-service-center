@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.1.2",
   "private": true,
+  "author": {
+    "name": "aatrooox",
+    "email": "gnakzz@qq.com"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev -p 4577",
@@ -17,7 +21,8 @@
     "release:minor": "npx changelogen@latest --minor --release --push",
     "release:major": "npx changelogen@latest --major --release --push",
     "version:update": "node scripts/update-version.js",
-    "quick-release": "./scripts/quick-release.sh"
+    "quick-release": "./scripts/quick-release.sh",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@nuxt/eslint": "1.7.0",
