@@ -161,7 +161,7 @@ jobs:
           name: android-apk
           path: ./artifacts/android/
 
-      - name: Create GitHub Release
+      - name: Update GitHub Release with Assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -177,7 +177,10 @@ jobs:
           files: |
             ./artifacts/macos/*.dmg
             ./artifacts/android/**/*.apk
-          draft: true
+          draft: false
           prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: false
+          append_body: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

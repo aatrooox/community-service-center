@@ -19,10 +19,9 @@ pnpm quick-release major   # 0.1.1 -> 1.0.0
 脚本会自动：
 1. 同步更新所有文件的版本号
 2. 暂存版本文件
-3. 使用项目的 changelogen 发版命令
-4. 自动创建 changelog 和标签
-5. 推送到远程仓库
-6. 触发 GitHub Actions 构建
+3. 使用 changelogen 更新版本号和生成 changelog
+4. 创建 Git 标签并推送到远程仓库
+5. 触发 GitHub Actions 构建和发布
 
 ## 自动发版流程
 
@@ -44,14 +43,16 @@ git push origin v1.0.0
 - **macOS 构建器**：构建 Universal macOS DMG（支持 Intel 和 Apple Silicon）
 - **Ubuntu 构建器**：构建 Android APK（ARM64 架构）
 
-### 3. 发布管理
+### 3. 自动发布
 
-构建完成后：
+构建完成后，GitHub Actions 会自动：
 
-1. 访问 GitHub Releases 页面
-2. 找到自动创建的草稿发布
-3. 编辑发布说明
-4. 发布正式版本
+1. 更新现有的 GitHub Release（如果存在）
+2. 上传构建的 macOS DMG 和 Android APK 文件
+3. 发布正式版本（非草稿状态）
+4. 设置为最新版本
+
+> **注意**：现在发布流程已完全自动化，无需手动干预。如需修改发布说明，可在发布后编辑 Release。
 
 ## 手动触发构建
 

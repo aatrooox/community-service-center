@@ -57,16 +57,17 @@ esac
 echo "✅ 版本号更新完成！"
 
 if [ "$AUTO_MODE" = true ]; then
-    # 自动模式：执行所有步骤
-    # echo "🔄 自动执行后续步骤..."
+
+    echo "🔄 自动执行后续步骤..."
     
     # 获取新版本号
     NEW_VERSION=$(node -p "require('./package.json').version")
     echo "📦 新版本: v$NEW_VERSION"
     
-    # # Git 操作 - changelogen 已自动创建提交和标签
-    # echo "⬆️ 推送到远程仓库..."
-    # git push
+    # Git 操作 - 创建标签并推送
+    echo "🏷️ 创建并推送标签..."
+    git tag "v$NEW_VERSION"
+    git push origin "v$NEW_VERSION"
     
     echo "🎉 自动发布完成！"
     echo "📋 GitHub Actions 将自动构建并创建 Release"
@@ -75,12 +76,10 @@ else
     echo ""
     echo "📋 接下来请手动执行以下步骤:"
     echo "1. 检查生成的 CHANGELOG.md 和 package.json 文件"
-    echo "2. git add ."
-    echo "3. git commit -m \"chore: release v\$(node -p \"require('./package.json').version\")\""
-    echo "4. git push"
-    echo "5. git tag \"v\$(node -p \"require('./package.json').version\")\""
-    echo "6. git push origin \"v\$(node -p \"require('./package.json').version\")\""
-    echo "7. GitHub Actions 将自动构建并创建 Release"
+    echo "2. 创建并推送标签:"
+    echo "   git tag \"v\$(node -p \"require('./package.json').version\")\""
+    echo "   git push origin \"v\$(node -p \"require('./package.json').version\")\""
+    echo "3. GitHub Actions 将自动构建并更新 Release"
     echo ""
     echo "🎉 发布准备完成！"
     echo "💡 提示: 使用 --auto 参数可自动执行所有步骤"
