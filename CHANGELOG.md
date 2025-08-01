@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.25
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.24...v0.1.25)
+
+### 🩹 Fixes
+
+- 111 ([6712e33](https://github.com/aatrooox/community-service-center/commit/6712e33))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.24
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.23...v0.1.24)
