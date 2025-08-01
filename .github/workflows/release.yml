@@ -84,7 +84,6 @@ jobs:
         if: matrix.platform == 'ubuntu-20.04'
         run: |
           rustup target add aarch64-linux-android
-          cargo install tauri-cli --version "^2.0" --locked
 
       - name: Build the app (macOS)
         if: matrix.platform == 'macos-latest'
@@ -100,15 +99,21 @@ jobs:
       - name: Build Android APK
         if: matrix.platform == 'ubuntu-20.04'
         run: |
+          echo "Starting Android build..."
           pnpm tauri android init
-          pnpm tauri android build --apk
+          echo "Android init completed, starting build..."
+          pnpm tauri android build --apk --target aarch64
+          echo "Android build completed"
+          ls -la src-tauri/gen/android/app/build/outputs/apk/ || echo "APK output directory not found"
 
       - name: Upload Android APK
         if: matrix.platform == 'ubuntu-20.04'
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
+          path: |
+            src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
+            src-tauri/gen/android/app/build/outputs/apk/*/release/*.apk
 
   release:
     needs: build
@@ -146,10 +151,10 @@ jobs:
 
             ## 🔄 更新日志
             请查看 [CHANGELOG.md](https://github.com/zzstudio/community-service-center/blob/main/CHANGELOG.md) 了解详细更新内容。
-          draft: true
-          prerelease: false
           files: |
             ./macos/*.dmg
             ./android/*.apk
+          draft: true
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
