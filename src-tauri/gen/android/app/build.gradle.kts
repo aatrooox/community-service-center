@@ -26,12 +26,12 @@ android {
         versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
     }
     signingConfigs {
-        create("debug") {
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-            storeFile = file("../../../debug.keystore")
-            storePassword = "android"
-        }
+        // create("debug") {
+        //     keyAlias = "androiddebugkey"
+        //     keyPassword = "android"
+        //     storeFile = file("../../../debug.keystore")
+        //     storePassword = "android"
+        // }
         create("release") {
             val keystorePropertiesFile = rootProject.file("keystore.properties")
             val keystoreProperties = Properties()
