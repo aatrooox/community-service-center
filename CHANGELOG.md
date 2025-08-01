@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.20
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.19...v0.1.20)
+
+### 🚀 Enhancements
+
+- 使用自签证书; 安卓包只打一个 ([87e788d](https://github.com/aatrooox/community-service-center/commit/87e788d))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.19
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.15...v0.1.19)
