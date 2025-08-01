@@ -14,19 +14,47 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const rootDir = join(__dirname, '..')
 
+// 获取命令行参数
+const versionType = process.argv[2]
+
+if (!versionType) {
+  console.error('请提供版本类型')
+  console.error('用法: node scripts/update-version.js <type>')
+  console.error('示例: node scripts/update-version.js patch')
+  console.error('支持的类型: patch, minor, major')
+  process.exit(1)
+}
+
+// 验证版本类型
+if (!['patch', 'minor', 'major'].includes(versionType)) {
+  console.error('无效的版本类型，支持: patch, minor, major')
+  process.exit(1)
+}
+
+// 读取当前版本号
+const packageJsonPath = join(rootDir, 'package.json')
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+const currentVersion = packageJson.version
+
+// 计算新版本号
+function calculateNewVersion(current, type) {
+  const [major, minor, patch] = current.split('.').map(Number)
+
+  switch (type) {
+    case 'patch':
+      return `${major}.${minor}.${patch + 1}`
+    case 'minor':
+      return `${major}.${minor + 1}.0`
+    case 'major':
+      return `${major + 1}.0.0`
+    default:
+      throw new Error(`无效的版本类型: ${type}`)
+  }
+}
+
+const newVersion = calculateNewVersion(currentVersion, versionType)
+
 function updateVersion(newVersion) {
-  if (!newVersion) {
-    console.error('请提供新版本号，例如: node scripts/update-version.js 1.0.0')
-    process.exit(1)
-  }
-
-  // 验证版本号格式
-  const versionRegex = /^\d+\.\d+\.\d+$/
-  if (!versionRegex.test(newVersion)) {
-    console.error('版本号格式错误，请使用 x.y.z 格式，例如: 1.0.0')
-    process.exit(1)
-  }
-
   console.log(`正在更新版本号到 ${newVersion}...`)
 
   try {
@@ -64,6 +92,4 @@ function updateVersion(newVersion) {
   }
 }
 
-// 获取命令行参数
-const newVersion = process.argv[2]
 updateVersion(newVersion)

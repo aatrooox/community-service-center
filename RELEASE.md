@@ -2,6 +2,28 @@
 
 本项目已配置 GitHub Actions 自动构建，支持自动打包 Android APK 和 macOS DMG 安装包。
 
+## 快速发版
+
+使用快速发版脚本可以一键完成版本更新和发布：
+
+```bash
+# 发布 patch 版本（默认）
+pnpm quick-release
+
+# 或者指定版本类型
+pnpm quick-release patch   # 0.1.1 -> 0.1.2
+pnpm quick-release minor   # 0.1.1 -> 0.2.0
+pnpm quick-release major   # 0.1.1 -> 1.0.0
+```
+
+脚本会自动：
+1. 同步更新所有文件的版本号
+2. 暂存版本文件
+3. 使用项目的 changelogen 发版命令
+4. 自动创建 changelog 和标签
+5. 推送到远程仓库
+6. 触发 GitHub Actions 构建
+
 ## 自动发版流程
 
 ### 1. 创建发版标签
