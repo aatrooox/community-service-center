@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.29
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.28...v0.1.29)
+
+### 🚀 Enhancements
+
+- 增加 navbar 用于解决手机端顶部被遮挡问题 ([8dffa29](https://github.com/aatrooox/community-service-center/commit/8dffa29))
+- Sqlite 优化; 新增设置页面;工具页面 ([49731a2](https://github.com/aatrooox/community-service-center/commit/49731a2))
+
+### 🏡 Chore
+
+- Version ([d0617fa](https://github.com/aatrooox/community-service-center/commit/d0617fa))
+- Update Tauri version for patch release ([8322560](https://github.com/aatrooox/community-service-center/commit/8322560))
+- **release:** V0.1.28 ([507a13b](https://github.com/aatrooox/community-service-center/commit/507a13b))
+- Update Tauri version for patch release ([3ab90d3](https://github.com/aatrooox/community-service-center/commit/3ab90d3))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.28
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.27...v0.1.28)
