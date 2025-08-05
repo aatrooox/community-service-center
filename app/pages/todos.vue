@@ -132,13 +132,13 @@ const filteredTodos = computed(() => {
 
   // 按分类筛选
   if (selectedCategory.value && selectedCategory.value !== 'all') {
-    result = result.filter(todo => todo.categoryId === selectedCategory.value)
+    result = result.filter(todo => String(todo.categoryId) === String(selectedCategory.value))
   }
 
   // 按标签筛选
   if (selectedTag.value && selectedTag.value !== 'all') {
     result = result.filter(todo =>
-      todo.tags?.some(tag => tag.id === selectedTag.value),
+      todo.tags && todo.tags.length > 0 && todo.tags.some(tag => tag.id === selectedTag.value),
     )
   }
 
@@ -213,12 +213,10 @@ function getPriorityInfo(priority: number) {
 // 筛选相关函数
 function filterByCategory(categoryId: string) {
   selectedCategory.value = categoryId
-  selectedTag.value = 'all' // 清除标签筛选
 }
 
 function filterByTag(tagId: string) {
   selectedTag.value = tagId
-  selectedCategory.value = 'all' // 清除分类筛选
 }
 
 function clearFilters() {
@@ -322,16 +320,11 @@ async function loadTodos() {
   try {
     const todoList = await dbGetAllTodos()
 
-    // 为每个待办事项关联分类和标签信息
+    // 数据库接口已经处理了字段转换和分类关联，直接使用返回的数据
+    // 只需要确保标签数组存在
     for (const todo of todoList) {
-      // 关联分类信息
-      if (todo.categoryId) {
-        todo.category = categories.value.find(cat => cat.id === todo.categoryId)
-      }
-
-      // 关联标签信息
-      if (todo.tagIds && todo.tagIds.length > 0) {
-        todo.tags = tags.value.filter(tag => todo.tagIds.includes(tag.id))
+      if (!todo.tags) {
+        todo.tags = []
       }
     }
 
@@ -415,12 +408,10 @@ onMounted(async () => {
     // 初始化数据库
     await initDatabase()
 
-    // 加载所有数据
-    await Promise.all([
-      loadCategories(),
-      loadTags(),
-      loadTodos(),
-    ])
+    // 按顺序加载数据，确保依赖关系正确
+    await loadCategories()
+    await loadTags()
+    await loadTodos()
 
     // 如果没有分类，创建默认分类
     if (categories.value.length === 0) {
@@ -436,6 +427,7 @@ onMounted(async () => {
       }
       await dbCreateTodoCategory(defaultCategory)
       categories.value.push(defaultCategory)
+      await loadTodos() // 重新加载待办以关联新分类
     }
 
     // 如果没有标签，创建默认标签
@@ -465,6 +457,7 @@ onMounted(async () => {
         await dbCreateTodoTag(tag)
         tags.value.push(tag)
       }
+      await loadTodos() // 重新加载待办以关联新标签
     }
   }
   catch (err) {
@@ -474,7 +467,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-950 p-3">
+  <div class="min-h-screen bg-gray-950 px-6 pb-20 pt-10 sm:pt-4">
     <!-- 页面标题和统计 -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-3">
@@ -689,10 +682,10 @@ onMounted(async () => {
     </div>
 
     <!-- 筛选 -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-4">
+    <div class="flex gap-2 mb-4">
       <!-- 状态筛选 -->
       <Select v-model="selectedFilter">
-        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 w-full sm:w-32">
+        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 w-20 sm:w-24">
           <SelectValue />
         </SelectTrigger>
         <SelectContent class="bg-gray-900 border-gray-800">
@@ -709,8 +702,8 @@ onMounted(async () => {
 
       <!-- 分类筛选 -->
       <Select v-model="selectedCategory">
-        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 w-full sm:w-40">
-          <SelectValue placeholder="选择分类" />
+        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 flex-1 min-w-0">
+          <SelectValue placeholder="分类" />
         </SelectTrigger>
         <SelectContent class="bg-gray-900 border-gray-800">
           <SelectItem value="all" class="text-gray-100 hover:bg-gray-800">
@@ -732,8 +725,8 @@ onMounted(async () => {
 
       <!-- 标签筛选 -->
       <Select v-model="selectedTag">
-        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 w-full sm:w-40">
-          <SelectValue placeholder="选择标签" />
+        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 flex-1 min-w-0">
+          <SelectValue placeholder="标签" />
         </SelectTrigger>
         <SelectContent class="bg-gray-900 border-gray-800">
           <SelectItem value="all" class="text-gray-100 hover:bg-gray-800">
@@ -753,13 +746,11 @@ onMounted(async () => {
       <!-- 清除筛选按钮 -->
       <Button
         v-if="(selectedCategory && selectedCategory !== 'all') || (selectedTag && selectedTag !== 'all') || selectedFilter !== 'all'"
-        variant="outline"
         size="sm"
-        class="border-gray-700 text-gray-300 hover:bg-gray-800 whitespace-nowrap"
+        class="bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700 px-2"
         @click="clearFilters"
       >
-        <Icon name="lucide:x" class="w-4 h-4 mr-1" />
-        清除筛选
+        <Icon name="lucide:x" class="w-4 h-4" />
       </Button>
     </div>
 

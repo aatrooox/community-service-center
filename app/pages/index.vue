@@ -163,7 +163,7 @@ function formatNumber(num: number) {
 <template>
   <div class="min-h-screen bg-gray-950">
     <!-- 顶部渐变区域 -->
-    <div class="bg-gradient-to-br from-cyan-600 via-cyan-500 to-blue-600 p-6 pb-8">
+    <div class="bg-gradient-to-br from-cyan-600 via-cyan-500 to-blue-600 p-6 pb-8 pt-10 sm:pt-4">
       <!-- 右侧功能按钮 -->
       <!-- <div class="flex justify-end gap-3 mb-6">
         <button class="w-12 h-12 rounded-full bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black/30 transition-colors">
@@ -274,7 +274,7 @@ function formatNumber(num: number) {
     </div>
 
     <!-- 主要内容区域 -->
-    <div class="p-6 space-y-6">
+    <div class="p-6 space-y-6 rounded-t-2xl">
       <!-- 副业项目卡片 -->
       <div class="dashboard-card bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <div class="flex items-center justify-between mb-6">

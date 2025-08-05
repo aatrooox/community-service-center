@@ -48,6 +48,11 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     name: 'tauri-demo',
     type: PAGE_TYPES.TAURI_DEPENDENT,
   },
+  {
+    path: '/settings',
+    name: '设置',
+    type: PAGE_TYPES.TAURI_DEPENDENT,
+  },
 ]
 
 /**

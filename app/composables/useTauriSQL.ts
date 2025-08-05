@@ -12,8 +12,7 @@ export class SQLService {
   async init(): Promise<void> {
     if (!this.db) {
       this.db = await Database.load(this.dbPath)
-      // 创建示例表
-      await this.createTables()
+      // Migration 会在插件初始化时自动执行，无需手动创建表
     }
   }
 
@@ -24,85 +23,7 @@ export class SQLService {
     return this.db
   }
 
-  private async createTables(): Promise<void> {
-    const db = this.ensureDB()
-
-    // 创建用户表
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
-
-    // 创建设置表
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
-
-    // 创建待办分类表
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS todo_categories (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        color TEXT NOT NULL DEFAULT '#0891b2',
-        icon TEXT NOT NULL DEFAULT 'folder',
-        sort_order INTEGER NOT NULL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
-
-    // 创建待办标签表
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS todo_tags (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        parent_id TEXT,
-        level INTEGER NOT NULL DEFAULT 1,
-        color TEXT NOT NULL DEFAULT '#06b6d4',
-        sort_order INTEGER NOT NULL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (parent_id) REFERENCES todo_tags(id) ON DELETE CASCADE
-      )
-    `)
-
-    // 创建待办事项表
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS todos (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        completed BOOLEAN NOT NULL DEFAULT 0,
-        priority INTEGER NOT NULL DEFAULT 2,
-        due_date DATETIME,
-        category_id TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (category_id) REFERENCES todo_categories(id) ON DELETE SET NULL
-      )
-    `)
-
-    // 创建待办事项标签关联表
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS todo_tag_relations (
-        todo_id TEXT NOT NULL,
-        tag_id TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (todo_id, tag_id),
-        FOREIGN KEY (todo_id) REFERENCES todos(id) ON DELETE CASCADE,
-        FOREIGN KEY (tag_id) REFERENCES todo_tags(id) ON DELETE CASCADE
-      )
-    `)
-  }
+  // Migration 会在 Tauri 插件初始化时自动执行，无需手动创建表
 
   // 用户操作
   async createUser(name: string, email: string): Promise<number> {
@@ -244,6 +165,12 @@ export class SQLService {
       // 转换布尔值：SQLite的0/1转换为JavaScript的true/false
       todo.completed = Boolean(todo.completed)
 
+      // 转换字段名：将数据库的下划线命名转换为驼峰命名
+      todo.categoryId = todo.category_id
+      todo.dueDate = todo.due_date
+      todo.createdAt = todo.created_at
+      todo.updatedAt = todo.updated_at
+
       // 构建分类对象
       if (todo.category_name) {
         todo.category = {
@@ -263,6 +190,10 @@ export class SQLService {
       todo.tags = tags
 
       // 清理临时字段
+      delete todo.category_id
+      delete todo.due_date
+      delete todo.created_at
+      delete todo.updated_at
       delete todo.category_name
       delete todo.category_color
       delete todo.category_icon
@@ -314,6 +245,93 @@ export class SQLService {
   async deleteTodo(id: string): Promise<void> {
     const db = this.ensureDB()
     await db.execute('DELETE FROM todos WHERE id = ?', [id])
+  }
+
+  // 服务器 Token 操作
+  async createServerToken(token: any): Promise<number> {
+    const db = this.ensureDB()
+    const result = await db.execute(
+      'INSERT INTO server_tokens (server_url, token_name, token_value, description, is_active) VALUES (?, ?, ?, ?, ?)',
+      [token.serverUrl, token.tokenName, token.tokenValue, token.description || null, token.isActive ? 1 : 0],
+    )
+    return result.lastInsertId as number
+  }
+
+  async getAllServerTokens(): Promise<any[]> {
+    const db = this.ensureDB()
+    const tokens = await db.select('SELECT * FROM server_tokens ORDER BY created_at DESC') as any[]
+
+    // 转换数据格式
+    return tokens.map(token => ({
+      ...token,
+      isActive: Boolean(token.is_active),
+      serverName: token.server_name,
+      serverUrl: token.server_url,
+      tokenName: token.token_name,
+      tokenValue: token.token_value,
+      createdAt: token.created_at,
+      updatedAt: token.updated_at,
+    }))
+  }
+
+  async getServerTokensByUrl(serverUrl: string): Promise<any[]> {
+    const db = this.ensureDB()
+    const tokens = await db.select(
+      'SELECT * FROM server_tokens WHERE server_url = ? AND is_active = 1 ORDER BY created_at DESC',
+      [serverUrl],
+    ) as any[]
+
+    // 转换数据格式
+    return tokens.map(token => ({
+      ...token,
+      isActive: Boolean(token.is_active),
+      serverName: token.server_name,
+      serverUrl: token.server_url,
+      tokenName: token.token_name,
+      tokenValue: token.token_value,
+      createdAt: token.created_at,
+      updatedAt: token.updated_at,
+    }))
+  }
+
+  async updateServerToken(id: number, updates: any): Promise<void> {
+    const db = this.ensureDB()
+    const fields = []
+    const values = []
+
+    if (updates.serverUrl !== undefined) {
+      fields.push('server_url = ?')
+      values.push(updates.serverUrl)
+    }
+    if (updates.tokenName !== undefined) {
+      fields.push('token_name = ?')
+      values.push(updates.tokenName)
+    }
+    if (updates.tokenValue !== undefined) {
+      fields.push('token_value = ?')
+      values.push(updates.tokenValue)
+    }
+    if (updates.description !== undefined) {
+      fields.push('description = ?')
+      values.push(updates.description)
+    }
+    if (updates.isActive !== undefined) {
+      fields.push('is_active = ?')
+      values.push(updates.isActive ? 1 : 0)
+    }
+
+    fields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(id)
+
+    await db.execute(
+      `UPDATE server_tokens SET ${fields.join(', ')} WHERE id = ?`,
+      values,
+    )
+  }
+
+  async deleteServerToken(id: number): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM server_tokens WHERE id = ?', [id])
   }
 
   // 关闭数据库连接
@@ -669,6 +687,89 @@ export function useTauriSQL() {
     }
   }
 
+  // Server Token related methods
+  const createServerToken = async (token: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.createServerToken(token)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '创建服务器 Token 失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAllServerTokens = async () => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const tokens = await sqlService.getAllServerTokens()
+      return tokens
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取服务器 Token 列表失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getServerTokensByUrl = async (serverUrl: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const tokens = await sqlService.getServerTokensByUrl(serverUrl)
+      return tokens
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取服务器 Token 失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const updateServerToken = async (id: number, updates: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.updateServerToken(id, updates)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '更新服务器 Token 失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteServerToken = async (id: number) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.deleteServerToken(id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '删除服务器 Token 失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
   // 自动初始化（可选）
   const autoInit = async () => {
     if (import.meta.client && !isInitialized.value) {
@@ -704,6 +805,13 @@ export function useTauriSQL() {
     getAllTodos,
     updateTodo,
     deleteTodo,
+
+    // 服务器 Token 相关方法
+    createServerToken,
+    getAllServerTokens,
+    getServerTokensByUrl,
+    updateServerToken,
+    deleteServerToken,
 
     autoInit,
   }
