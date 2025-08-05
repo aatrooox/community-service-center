@@ -102,6 +102,18 @@ jobs:
         if: matrix.platform == 'macos-latest'
         run: pnpm tauri build ${{ matrix.args }}
 
+      - name: Rename macOS DMG with version
+        if: matrix.platform == 'macos-latest'
+        run: |
+          VERSION=${{ github.ref_name }}
+          cd src-tauri/target/universal-apple-darwin/release/bundle/dmg
+          for file in *.dmg; do
+            if [ -f "$file" ]; then
+              base_name=$(basename "$file" .dmg)
+              mv "$file" "${base_name}-${VERSION}.dmg"
+            fi
+          done
+
       - name: Upload macOS DMG
         if: matrix.platform == 'macos-latest'
         uses: actions/upload-artifact@v4
@@ -133,6 +145,16 @@ jobs:
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: Rename Android APK with version
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          VERSION=${{ github.ref_name }}
+          find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -type f | while read file; do
+            dir=$(dirname "$file")
+            base_name=$(basename "$file" .apk)
+            mv "$file" "${dir}/${base_name}-${VERSION}.apk"
+          done
 
       - name: Upload Android APK
         if: matrix.platform == 'ubuntu-22.04'
