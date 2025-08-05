@@ -299,62 +299,62 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
   <div class="container mx-auto pb-20 px-6 space-y-6 pt-10 sm:pt-4">
     <!-- 页面标题 -->
     <div class="text-center">
-      <h1 class="text-3xl font-bold text-gray-100 mb-2">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
         设置
       </h1>
-      <p class="text-gray-400">
+      <p class="text-gray-600">
         管理个人信息和服务器配置
       </p>
     </div>
 
     <!-- 错误提示 -->
-    <div v-if="error" class="bg-red-500/20 border border-red-500/30 text-red-400 p-4 rounded-lg">
+    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
       {{ error }}
     </div>
     <!-- BaseURL 管理 -->
-    <Card class="bg-gray-900 border-gray-800">
+    <Card class="bg-white border-gray-200 shadow-sm">
       <CardHeader>
-        <CardTitle class="text-gray-100 flex items-center gap-2">
+        <CardTitle class="text-gray-900 flex items-center gap-2">
           <Icon name="lucide:link" class="w-5 h-5" />
           BaseURL 管理
         </CardTitle>
-        <CardDescription class="text-gray-400">
+        <CardDescription class="text-gray-600">
           管理服务器 API 的基础 URL 列表
         </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <!-- 添加新 BaseURL -->
-        <div class="border border-gray-700 rounded-lg p-4 space-y-4">
-          <h3 class="text-lg font-medium text-gray-200">
+        <div class="border border-gray-300 rounded-lg p-4 space-y-4">
+          <h3 class="text-lg font-medium text-gray-900">
             添加新 BaseURL
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label for="url-name" class="text-gray-300 text-sm font-medium">名称</label>
+              <label for="url-name" class="text-gray-700 text-sm font-medium">名称</label>
               <Input
                 id="url-name"
                 v-model="newBaseUrl.name"
                 placeholder="例如：Umami API"
-                class="bg-gray-800 border-gray-700 text-gray-100"
+                class="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
             <div class="space-y-2">
-              <label for="url-value" class="text-gray-300 text-sm font-medium">URL</label>
+              <label for="url-value" class="text-gray-700 text-sm font-medium">URL</label>
               <Input
                 id="url-value"
                 v-model="newBaseUrl.url"
                 placeholder="https://api.example.com"
-                class="bg-gray-800 border-gray-700 text-gray-100"
+                class="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
           </div>
           <div class="space-y-2">
-            <label for="url-description" class="text-gray-300 text-sm font-medium">描述（可选）</label>
+            <label for="url-description" class="text-gray-700 text-sm font-medium">描述（可选）</label>
             <Input
               id="url-description"
               v-model="newBaseUrl.description"
               placeholder="API 用途描述"
-              class="bg-gray-800 border-gray-700 text-gray-100"
+              class="bg-gray-50 border-gray-300 text-gray-900"
             />
           </div>
           <Button
@@ -369,22 +369,22 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
 
         <!-- BaseURL 列表 -->
         <div v-if="serverConfig.baseUrls.length > 0" class="space-y-3">
-          <h3 class="text-lg font-medium text-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">
             已配置的 BaseURL
           </h3>
           <div class="space-y-2">
             <div
               v-for="baseUrl in serverConfig.baseUrls"
               :key="baseUrl.id"
-              class="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
+              class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
             >
               <div class="flex-1">
                 <div class="flex items-center gap-2">
-                  <Badge class="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                  <Badge class="bg-blue-100 text-blue-700 border-blue-200">
                     {{ baseUrl.name }}
                   </Badge>
                 </div>
-                <p class="text-gray-300 text-sm mt-1">
+                <p class="text-gray-700 text-sm mt-1">
                   {{ baseUrl.url }}
                 </p>
                 <p v-if="baseUrl.description" class="text-gray-500 text-xs mt-1">
@@ -405,30 +405,30 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
     </Card>
 
     <!-- 服务器配置 -->
-    <Card class="bg-gray-900 border-gray-800">
+    <Card class="bg-white border-gray-200 shadow-sm">
       <CardHeader>
-        <CardTitle class="text-gray-100 flex items-center gap-2">
+        <CardTitle class="text-gray-900 flex items-center gap-2">
           <Icon name="lucide:server" class="w-5 h-5" />
           服务器配置
         </CardTitle>
-        <CardDescription class="text-gray-400">
+        <CardDescription class="text-gray-600">
           配置具体服务的 API 地址
         </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-2">
-            <label for="umami-api" class="text-gray-300 text-sm font-medium">Umami API BaseURL</label>
+            <label for="umami-api" class="text-gray-700 text-sm font-medium">Umami API BaseURL</label>
             <Select v-model="serverConfig.umamiApiBaseUrl">
-              <SelectTrigger class="bg-gray-800 border-gray-700 text-gray-100">
+              <SelectTrigger class="bg-gray-50 border-gray-300 text-gray-900">
                 <SelectValue placeholder="选择 Umami API BaseURL" />
               </SelectTrigger>
-              <SelectContent class="bg-gray-800 border-gray-700">
+              <SelectContent class="bg-white border-gray-300">
                 <SelectItem
                   v-for="baseUrl in serverConfig.baseUrls"
                   :key="baseUrl.id"
                   :value="baseUrl.url"
-                  class="text-gray-100 hover:bg-gray-700"
+                  class="text-gray-900 hover:bg-gray-100"
                 >
                   {{ baseUrl.name }} - {{ baseUrl.url }}
                 </SelectItem>
@@ -436,17 +436,17 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
             </Select>
           </div>
           <div class="space-y-2">
-            <label for="dynamic-api" class="text-gray-300 text-sm font-medium">动态接口 BaseURL</label>
+            <label for="dynamic-api" class="text-gray-700 text-sm font-medium">动态接口 BaseURL</label>
             <Select v-model="serverConfig.dynamicApiBaseUrl">
-              <SelectTrigger class="bg-gray-800 border-gray-700 text-gray-100">
+              <SelectTrigger class="bg-gray-50 border-gray-300 text-gray-900">
                 <SelectValue placeholder="选择动态接口 BaseURL" />
               </SelectTrigger>
-              <SelectContent class="bg-gray-800 border-gray-700">
+              <SelectContent class="bg-white border-gray-300">
                 <SelectItem
                   v-for="baseUrl in serverConfig.baseUrls"
                   :key="baseUrl.id"
                   :value="baseUrl.url"
-                  class="text-gray-100 hover:bg-gray-700"
+                  class="text-gray-900 hover:bg-gray-100"
                 >
                   {{ baseUrl.name }} - {{ baseUrl.url }}
                 </SelectItem>
@@ -466,20 +466,20 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
     </Card>
 
     <!-- Token 管理 -->
-    <Card class="bg-gray-900 border-gray-800">
+    <Card class="bg-white border-gray-200 shadow-sm">
       <CardHeader>
-        <CardTitle class="text-gray-100 flex items-center gap-2">
+        <CardTitle class="text-gray-900 flex items-center gap-2">
           <Icon name="lucide:key" class="w-5 h-5" />
           Token 管理
         </CardTitle>
-        <CardDescription class="text-gray-400">
+        <CardDescription class="text-gray-600">
           管理不同服务器的访问 Token
         </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <!-- 添加 Token 按钮 -->
         <div class="flex justify-between items-center">
-          <h3 class="text-lg font-medium text-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">
             服务器 Token 列表
           </h3>
           <Dialog v-model:open="isTokenDialogOpen">
@@ -489,28 +489,28 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
                 添加 Token
               </Button>
             </DialogTrigger>
-            <DialogContent class="bg-gray-900 border-gray-800">
+            <DialogContent class="bg-white border-gray-200">
               <DialogHeader>
-                <DialogTitle class="text-gray-100">
+                <DialogTitle class="text-gray-900">
                   添加服务器 Token
                 </DialogTitle>
-                <DialogDescription class="text-gray-400">
+                <DialogDescription class="text-gray-600">
                   为指定服务器添加访问 Token
                 </DialogDescription>
               </DialogHeader>
               <div class="space-y-4">
                 <div class="space-y-2">
-                  <label class="text-gray-300 text-sm font-medium">服务器</label>
+                  <label class="text-gray-700 text-sm font-medium">服务器</label>
                   <Select v-model="newToken.serverUrl">
-                    <SelectTrigger class="bg-gray-800 border-gray-700 text-gray-100">
+                    <SelectTrigger class="bg-gray-50 border-gray-300 text-gray-900">
                       <SelectValue placeholder="选择服务器" />
                     </SelectTrigger>
-                    <SelectContent class="bg-gray-800 border-gray-700">
+                    <SelectContent class="bg-white border-gray-300">
                       <SelectItem
                         v-for="baseUrl in serverConfig.baseUrls"
                         :key="baseUrl.id"
                         :value="baseUrl.url"
-                        class="text-gray-100 hover:bg-gray-700"
+                        class="text-gray-900 hover:bg-gray-100"
                       >
                         {{ baseUrl.name }} - {{ baseUrl.url }}
                       </SelectItem>
@@ -518,28 +518,28 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
                   </Select>
                 </div>
                 <div class="space-y-2">
-                  <label class="text-gray-300 text-sm font-medium">Token 名称</label>
+                  <label class="text-gray-700 text-sm font-medium">Token 名称</label>
                   <Input
                     v-model="newToken.tokenName"
                     placeholder="例如：API Key, Bearer Token"
-                    class="bg-gray-800 border-gray-700 text-gray-100"
+                    class="bg-gray-50 border-gray-300 text-gray-900"
                   />
                 </div>
                 <div class="space-y-2">
-                  <label class="text-gray-300 text-sm font-medium">Token 值</label>
+                  <label class="text-gray-700 text-sm font-medium">Token 值</label>
                   <Input
                     v-model="newToken.tokenValue"
                     type="password"
                     placeholder="输入 Token 值"
-                    class="bg-gray-800 border-gray-700 text-gray-100"
+                    class="bg-gray-50 border-gray-300 text-gray-900"
                   />
                 </div>
                 <div class="space-y-2">
-                  <label class="text-gray-300 text-sm font-medium">描述（可选）</label>
+                  <label class="text-gray-700 text-sm font-medium">描述（可选）</label>
                   <Textarea
                     v-model="newToken.description"
                     placeholder="Token 用途描述"
-                    class="bg-gray-800 border-gray-700 text-gray-100"
+                    class="bg-gray-50 border-gray-300 text-gray-900"
                   />
                 </div>
                 <div class="flex justify-end gap-2">
@@ -568,28 +568,28 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
             <div
               v-for="token in serverTokens"
               :key="token.id"
-              class="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
+              class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg"
             >
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-2">
-                  <Badge class="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                  <Badge class="bg-blue-100 text-blue-700 border-blue-200">
                     {{ token.serverName }}
                   </Badge>
-                  <Badge class="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                  <Badge class="bg-purple-100 text-purple-700 border-purple-200">
                     {{ token.tokenName }}
                   </Badge>
                   <Badge
                     :class="token.isActive
-                      ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                      : 'bg-gray-500/20 text-gray-400 border-gray-500/30'"
+                      ? 'bg-green-100 text-green-700 border-green-200'
+                      : 'bg-gray-100 text-gray-600 border-gray-300'"
                   >
                     {{ token.isActive ? '启用' : '禁用' }}
                   </Badge>
                 </div>
-                <p class="text-gray-300 text-sm">
+                <p class="text-gray-700 text-sm">
                   {{ token.serverUrl }}
                 </p>
-                <p class="text-gray-400 text-xs font-mono">
+                <p class="text-gray-600 text-xs font-mono">
                   {{ token.tokenValue.substring(0, 20) }}***
                 </p>
                 <p v-if="token.description" class="text-gray-500 text-xs mt-1">
@@ -600,7 +600,7 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
                 <Button
                   variant="outline"
                   size="sm"
-                  :class="token.isActive ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'"
+                  :class="token.isActive ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'"
                   @click="toggleTokenStatus(Number(token.id), !token.isActive)"
                 >
                   <Icon :name="token.isActive ? 'lucide:pause' : 'lucide:play'" class="w-4 h-4" />
@@ -618,11 +618,11 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
         </div>
 
         <div v-else class="text-center py-8">
-          <Icon name="lucide:key" class="w-12 h-12 text-gray-600 mx-auto mb-2" />
-          <p class="text-gray-500">
+          <Icon name="lucide:key" class="w-12 h-12 text-gray-400 mx-auto mb-2" />
+          <p class="text-gray-600">
             暂无服务器 Token
           </p>
-          <p class="text-gray-600 text-sm">
+          <p class="text-gray-500 text-sm">
             点击上方按钮添加第一个 Token
           </p>
         </div>
@@ -630,13 +630,13 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
     </Card>
 
     <!-- 危险操作 -->
-    <Card class="bg-gray-900 border-red-800">
+    <Card class="bg-white border-red-200 shadow-sm">
       <CardHeader>
-        <CardTitle class="text-red-400 flex items-center gap-2">
+        <CardTitle class="text-red-600 flex items-center gap-2">
           <Icon name="lucide:alert-triangle" class="w-5 h-5" />
           危险操作
         </CardTitle>
-        <CardDescription class="text-gray-400">
+        <CardDescription class="text-gray-600">
           这些操作将永久删除数据，请谨慎操作
         </CardDescription>
       </CardHeader>

@@ -164,16 +164,16 @@ function getCategoryCount(categoryId: string) {
 </script>
 
 <template>
-  <div class="min-h-screen pb-16 bg-gray-950 pt-10 sm:pt-4 px-6">
+  <div class="min-h-screen pb-16 bg-gray-50 pt-10 sm:pt-4 px-6">
     <!-- 工具详情页面布局 -->
     <div v-if="isToolDetailPage" class="flex flex-col h-screen">
       <!-- 顶部工具切换栏 -->
-      <div class="bg-gray-900 border-b border-gray-800 p-4 lg:p-6">
+      <div class="bg-white border-b border-gray-200 p-4 lg:p-6 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-3">
             <!-- 移动端返回按钮 -->
             <button
-              class="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+              class="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
               @click="backToToolList"
             >
               <Icon name="lucide:arrow-left" class="w-5 h-5" />
@@ -183,8 +183,8 @@ function getCategoryCount(categoryId: string) {
               <Icon name="lucide:arrow-left" class="w-4 h-4 mr-2" />
               返回工具列表
             </Button>
-            <div class="h-6 w-px bg-gray-700 hidden lg:block" />
-            <h1 class="text-lg lg:text-xl font-semibold text-gray-100">
+            <div class="h-6 w-px bg-gray-300 hidden lg:block" />
+            <h1 class="text-lg lg:text-xl font-semibold text-gray-900">
               {{ currentTool?.name || '工具详情' }}
             </h1>
           </div>
@@ -202,7 +202,7 @@ function getCategoryCount(categoryId: string) {
             :class="[
               tool.id === currentTool?.id
                 ? 'bg-cyan-600 text-white'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700',
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
             ]"
             @click="switchTool(tool.id)"
           >
@@ -217,33 +217,33 @@ function getCategoryCount(categoryId: string) {
       <div class="flex-1 overflow-auto">
         <div class="p-4 lg:p-6">
           <!-- 这里将显示具体的工具内容 -->
-          <Card class="bg-gray-900 border-gray-800">
+          <Card class="bg-white border-gray-200 shadow-sm">
             <CardHeader>
               <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center" :class="[currentTool?.color]">
                   <Icon :name="currentTool?.icon || 'lucide:tool'" class="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle class="text-gray-100">
+                  <CardTitle class="text-gray-900">
                     {{ currentTool?.name }}
                   </CardTitle>
-                  <CardDescription class="text-gray-400">
+                  <CardDescription class="text-gray-600">
                     {{ currentTool?.description }}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div class="bg-gray-800 rounded-lg p-8 text-center">
-                <Icon name="lucide:construction" class="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <h3 class="text-xl font-semibold text-gray-300 mb-2">
+              <div class="bg-gray-50 rounded-lg p-8 text-center border border-gray-200">
+                <Icon name="lucide:construction" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">
                   工具开发中
                 </h3>
                 <p class="text-gray-500">
                   {{ currentTool?.name }} 功能正在开发中，敬请期待！
                 </p>
                 <div class="flex flex-wrap gap-2 justify-center mt-4">
-                  <Badge v-for="tag in currentTool?.tags" :key="tag" variant="outline" class="text-gray-400 border-gray-600">
+                  <Badge v-for="tag in currentTool?.tags" :key="tag" variant="outline" class="text-gray-600 border-gray-300">
                     {{ tag }}
                   </Badge>
                 </div>
@@ -258,10 +258,10 @@ function getCategoryCount(categoryId: string) {
     <div v-else class="container mx-auto p-6">
       <!-- 页面标题 -->
       <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-100 mb-4">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
           工具箱
         </h1>
-        <p class="text-gray-400 text-lg">
+        <p class="text-gray-600 text-lg">
           精选实用工具，提升工作效率
         </p>
       </div>
@@ -276,7 +276,7 @@ function getCategoryCount(categoryId: string) {
               v-model="searchKeyword"
               type="text"
               placeholder="搜索工具..."
-              class="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent shadow-sm"
             >
           </div>
 
@@ -289,13 +289,13 @@ function getCategoryCount(categoryId: string) {
               :class="[
                 selectedCategory === category.id
                   ? 'bg-cyan-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700',
+                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200',
               ]"
               @click="selectedCategory = category.id"
             >
               <Icon :name="category.icon" class="w-4 h-4" />
               {{ category.name }}
-              <Badge variant="secondary" class="ml-1 bg-gray-700 text-gray-300">
+              <Badge variant="secondary" class="ml-1 bg-gray-100 text-gray-600">
                 {{ getCategoryCount(category.id) }}
               </Badge>
             </button>
@@ -308,7 +308,7 @@ function getCategoryCount(categoryId: string) {
         <Card
           v-for="tool in filteredTools"
           :key="tool.id"
-          class="bg-gray-900 border-gray-800 hover:border-gray-700 transition-all duration-200 cursor-pointer group hover:shadow-lg hover:shadow-cyan-500/10"
+          class="bg-white border-gray-200 hover:border-gray-300 transition-all duration-200 cursor-pointer group hover:shadow-lg hover:shadow-cyan-500/10"
           @click="handleToolClick(tool)"
         >
           <CardHeader class="pb-4">
@@ -322,10 +322,10 @@ function getCategoryCount(categoryId: string) {
             </div>
           </CardHeader>
           <CardContent class="pt-0">
-            <h3 class="text-lg font-semibold text-gray-100 mb-2 group-hover:text-cyan-400 transition-colors">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-cyan-600 transition-colors">
               {{ tool.name }}
             </h3>
-            <p class="text-gray-400 text-sm mb-4 line-clamp-2">
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
               {{ tool.description }}
             </p>
             <div class="flex flex-wrap gap-1">
@@ -333,14 +333,14 @@ function getCategoryCount(categoryId: string) {
                 v-for="tag in tool.tags.slice(0, 3)"
                 :key="tag"
                 variant="outline"
-                class="text-xs text-gray-400 border-gray-600"
+                class="text-xs text-gray-600 border-gray-300"
               >
                 {{ tag }}
               </Badge>
               <Badge
                 v-if="tool.tags.length > 3"
                 variant="outline"
-                class="text-xs text-gray-400 border-gray-600"
+                class="text-xs text-gray-600 border-gray-300"
               >
                 +{{ tool.tags.length - 3 }}
               </Badge>
@@ -351,8 +351,8 @@ function getCategoryCount(categoryId: string) {
 
       <!-- 空状态 -->
       <div v-if="filteredTools.length === 0" class="text-center py-16">
-        <Icon name="lucide:search-x" class="w-16 h-16 text-gray-600 mx-auto mb-4" />
-        <h3 class="text-xl font-semibold text-gray-300 mb-2">
+        <Icon name="lucide:search-x" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">
           未找到相关工具
         </h3>
         <p class="text-gray-500">

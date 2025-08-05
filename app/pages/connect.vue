@@ -467,11 +467,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-950 px-6 pb-20 pt-10 sm:pt-4">
+  <div class="min-h-screen bg-gray-50 px-6 pb-20 pt-10 sm:pt-4">
     <!-- 页面标题和统计 -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-3">
-        <h1 class="text-xl font-bold text-gray-100">
+        <h1 class="text-xl font-bold text-gray-900">
           待办事项
         </h1>
         <Dialog v-model:open="isCreateDialogOpen">
@@ -481,7 +481,7 @@ onMounted(async () => {
               新建待办
             </Button>
           </DialogTrigger>
-          <DialogContent class="bg-gray-900 border-gray-800 text-gray-100">
+          <DialogContent class="bg-white border-gray-200 text-gray-900">
             <DialogHeader>
               <DialogTitle>创建新的待办事项</DialogTitle>
               <DialogDescription class="text-gray-400">
@@ -502,28 +502,28 @@ onMounted(async () => {
 
               <!-- 描述 -->
               <div>
-                <label class="text-sm font-medium text-gray-200 mb-2 block">描述</label>
+                <label class="text-sm font-medium text-gray-700 mb-2 block">描述</label>
                 <Textarea
                   v-model="newTodo.description"
                   placeholder="输入详细描述（可选）"
-                  class="bg-gray-800 border-gray-700 text-gray-100"
+                  class="bg-white border-gray-300 text-gray-900"
                 />
               </div>
 
               <!-- 优先级和截止日期 -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="text-sm font-medium text-gray-200 mb-2 block">优先级</label>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">优先级</label>
                   <Select v-model="newTodo.priority">
-                    <SelectTrigger class="bg-gray-800 border-gray-700 text-gray-100">
+                    <SelectTrigger class="bg-white border-gray-300 text-gray-900">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent class="bg-gray-800 border-gray-700">
+                    <SelectContent class="bg-white border-gray-300">
                       <SelectItem
                         v-for="option in priorityOptions"
                         :key="option.value"
                         :value="option.value"
-                        class="text-gray-100 hover:bg-gray-700"
+                        class="text-gray-900 hover:bg-gray-100"
                       >
                         <div class="flex items-center gap-2">
                           <div class="w-3 h-3 rounded-full" :class="[option.color]" />
@@ -535,29 +535,29 @@ onMounted(async () => {
                 </div>
 
                 <div>
-                  <label class="text-sm font-medium text-gray-200 mb-2 block">截止日期</label>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">截止日期</label>
                   <Input
                     v-model="newTodo.dueDate"
                     type="datetime-local"
-                    class="bg-gray-800 border-gray-700 text-gray-100"
+                    class="bg-white border-gray-300 text-gray-900"
                   />
                 </div>
               </div>
 
               <!-- 分类选择 -->
               <div>
-                <label class="text-sm font-medium text-gray-200 mb-2 block">分类</label>
+                <label class="text-sm font-medium text-gray-700 mb-2 block">分类</label>
                 <div class="flex gap-2">
                   <Select v-model="newTodo.categoryId" class="flex-1">
-                    <SelectTrigger class="bg-gray-800 border-gray-700 text-gray-100">
+                    <SelectTrigger class="bg-white border-gray-300 text-gray-900">
                       <SelectValue placeholder="选择分类" />
                     </SelectTrigger>
-                    <SelectContent class="bg-gray-800 border-gray-700">
+                    <SelectContent class="bg-white border-gray-300">
                       <SelectItem
                         v-for="category in categories"
                         :key="category.id"
                         :value="category.id"
-                        class="text-gray-100 hover:bg-gray-700"
+                        class="text-gray-900 hover:bg-gray-100"
                       >
                         <div class="flex items-center gap-2">
                           <Icon :name="`lucide:${category.icon}`" class="w-4 h-4" />
@@ -569,7 +569,7 @@ onMounted(async () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    class="border-gray-700 text-gray-300 hover:bg-gray-800"
+                    class="border-gray-300 text-gray-700 hover:bg-gray-100"
                     @click="isCreatingCategory = !isCreatingCategory"
                   >
                     <Icon name="lucide:plus" class="w-4 h-4" />
@@ -600,7 +600,7 @@ onMounted(async () => {
 
               <!-- 标签选择 -->
               <div>
-                <label class="text-sm font-medium text-gray-200 mb-2 block">标签</label>
+                <label class="text-sm font-medium text-gray-700 mb-2 block">标签</label>
                 <div class="space-y-2">
                   <!-- 现有标签 -->
                   <div class="flex flex-wrap gap-2">
@@ -611,7 +611,7 @@ onMounted(async () => {
                       class="cursor-pointer transition-colors"
                       :class="{
                         'bg-cyan-600 text-white': newTodo.tagIds.includes(tag.id),
-                        'border-gray-600 text-gray-300 hover:bg-gray-800': !newTodo.tagIds.includes(tag.id),
+                        'border-gray-300 text-gray-700 hover:bg-gray-100': !newTodo.tagIds.includes(tag.id),
                       }"
                       @click="toggleTagSelection(tag.id)"
                     >
@@ -620,7 +620,7 @@ onMounted(async () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      class="border-gray-700 text-gray-300 hover:bg-gray-800 h-6"
+                      class="border-gray-300 text-gray-700 hover:bg-gray-100 h-6"
                       @click="isCreatingTag = !isCreatingTag"
                     >
                       <Icon name="lucide:plus" class="w-3 h-3" />
@@ -632,7 +632,7 @@ onMounted(async () => {
                     <Input
                       v-model="newTagName"
                       placeholder="输入新标签名称"
-                      class="bg-gray-800 border-gray-700 text-gray-100"
+                      class="bg-white border-gray-300 text-gray-900"
                       @keyup.enter="createTag"
                     />
                     <Button size="sm" class="bg-cyan-600 hover:bg-cyan-500" @click="createTag">
@@ -641,7 +641,7 @@ onMounted(async () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      class="border-gray-700 text-gray-300"
+                      class="border-gray-300 text-gray-700"
                       @click="isCreatingTag = false"
                     >
                       取消
@@ -654,7 +654,7 @@ onMounted(async () => {
               <div class="flex justify-end gap-2 pt-4">
                 <Button
                   variant="outline"
-                  class="border-gray-700 text-gray-300"
+                  class="border-gray-300 text-gray-700"
                   @click="isCreateDialogOpen = false"
                 >
                   取消
@@ -674,9 +674,9 @@ onMounted(async () => {
 
       <!-- 简约统计信息 -->
       <div class="flex items-center justify-between mb-3">
-        <div class="text-gray-400 text-xs">
-          共 <span class="text-gray-100 font-medium">{{ todoStats.total }}</span> 条代办，
-          还有 <span class="text-orange-500 font-medium">{{ todoStats.pending }}</span> 条未完成
+        <div class="text-gray-600 text-xs">
+          共 <span class="text-gray-900 font-medium">{{ todoStats.total }}</span> 条代办，
+          还有 <span class="text-orange-600 font-medium">{{ todoStats.pending }}</span> 条未完成
         </div>
       </div>
     </div>
@@ -685,15 +685,15 @@ onMounted(async () => {
     <div class="flex gap-2 mb-4">
       <!-- 状态筛选 -->
       <Select v-model="selectedFilter">
-        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 w-20 sm:w-24">
+        <SelectTrigger class="bg-white border-gray-300 text-gray-900 w-20 sm:w-24">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent class="bg-gray-900 border-gray-800">
+        <SelectContent class="bg-white border-gray-300">
           <SelectItem
             v-for="option in filterOptions"
             :key="option.value"
             :value="option.value"
-            class="text-gray-100 hover:bg-gray-800"
+            class="text-gray-900 hover:bg-gray-100"
           >
             {{ option.label }}
           </SelectItem>
@@ -702,18 +702,18 @@ onMounted(async () => {
 
       <!-- 分类筛选 -->
       <Select v-model="selectedCategory">
-        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 flex-1 min-w-0">
+        <SelectTrigger class="bg-white border-gray-300 text-gray-900 flex-1 min-w-0">
           <SelectValue placeholder="分类" />
         </SelectTrigger>
-        <SelectContent class="bg-gray-900 border-gray-800">
-          <SelectItem value="all" class="text-gray-100 hover:bg-gray-800">
+        <SelectContent class="bg-white border-gray-300">
+          <SelectItem value="all" class="text-gray-900 hover:bg-gray-100">
             全部分类
           </SelectItem>
           <SelectItem
             v-for="category in categories"
             :key="category.id"
             :value="category.id"
-            class="text-gray-100 hover:bg-gray-800"
+            class="text-gray-900 hover:bg-gray-100"
           >
             <div class="flex items-center gap-2">
               <Icon :name="`lucide:${category.icon}`" class="w-4 h-4" />
@@ -725,18 +725,18 @@ onMounted(async () => {
 
       <!-- 标签筛选 -->
       <Select v-model="selectedTag">
-        <SelectTrigger class="bg-gray-900 border-gray-800 text-gray-100 flex-1 min-w-0">
+        <SelectTrigger class="bg-white border-gray-300 text-gray-900 flex-1 min-w-0">
           <SelectValue placeholder="标签" />
         </SelectTrigger>
-        <SelectContent class="bg-gray-900 border-gray-800">
-          <SelectItem value="all" class="text-gray-100 hover:bg-gray-800">
+        <SelectContent class="bg-white border-gray-300">
+          <SelectItem value="all" class="text-gray-900 hover:bg-gray-100">
             全部标签
           </SelectItem>
           <SelectItem
             v-for="tag in tags"
             :key="tag.id"
             :value="tag.id"
-            class="text-gray-100 hover:bg-gray-800"
+            class="text-gray-900 hover:bg-gray-100"
           >
             {{ tag.name }}
           </SelectItem>
@@ -747,7 +747,7 @@ onMounted(async () => {
       <Button
         v-if="(selectedCategory && selectedCategory !== 'all') || (selectedTag && selectedTag !== 'all') || selectedFilter !== 'all'"
         size="sm"
-        class="bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700 px-2"
+        class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300 px-2"
         @click="clearFilters"
       >
         <Icon name="lucide:x" class="w-4 h-4" />
@@ -757,11 +757,11 @@ onMounted(async () => {
     <!-- 待办列表 -->
     <div class="space-y-2">
       <div v-if="filteredTodos.length === 0" class="text-center py-8">
-        <Icon name="lucide:inbox" class="w-12 h-12 text-gray-600 mx-auto mb-3" />
-        <p class="text-gray-400">
+        <Icon name="lucide:inbox" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+        <p class="text-gray-500">
           暂无待办事项
         </p>
-        <p class="text-gray-500 text-sm">
+        <p class="text-gray-600 text-sm">
           点击上方按钮创建第一个待办事项
         </p>
       </div>
@@ -769,7 +769,7 @@ onMounted(async () => {
       <div
         v-for="todo in filteredTodos"
         :key="todo.id"
-        class="bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors rounded-lg p-3"
+        class="bg-white border border-gray-200 hover:border-gray-300 transition-colors rounded-lg p-3 shadow-sm"
       >
         <div class="flex items-start gap-3">
           <!-- 完成状态 -->
@@ -784,7 +784,7 @@ onMounted(async () => {
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1">
                 <h3
-                  class="font-medium text-gray-100 text-sm leading-tight"
+                  class="font-medium text-gray-900 text-sm leading-tight"
                   :class="{ 'line-through text-gray-500': todo.completed }"
                 >
                   {{ todo.title }}
@@ -792,8 +792,8 @@ onMounted(async () => {
 
                 <p
                   v-if="todo.description"
-                  class="text-xs text-gray-400 mt-1 mb-2 line-clamp-2"
-                  :class="{ 'line-through': todo.completed }"
+                  class="text-xs text-gray-600 mt-1 mb-2 line-clamp-2"
+                  :class="{ 'line-through text-gray-500': todo.completed }"
                 >
                   {{ todo.description }}
                 </p>
@@ -816,7 +816,7 @@ onMounted(async () => {
                     v-for="tag in todo.tags"
                     :key="tag.id"
                     variant="outline"
-                    class="border-gray-600 text-gray-300 text-xs px-1.5 py-0.5 cursor-pointer hover:bg-gray-600/20 transition-colors"
+                    class="border-gray-300 text-gray-600 text-xs px-1.5 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors"
                     @click="filterByTag(tag.id)"
                   >
                     {{ tag.name }}
@@ -833,12 +833,12 @@ onMounted(async () => {
 
                 <!-- 截止日期 -->
                 <div v-if="todo.dueDate" class="flex items-center gap-1 text-xs">
-                  <Icon name="lucide:calendar" class="w-3 h-3" />
+                  <Icon name="lucide:calendar" class="w-3 h-3 text-gray-500" />
                   <span
                     :class="{
-                      'text-red-400': !todo.completed && new Date(todo.dueDate) < new Date(),
-                      'text-orange-400': !todo.completed && new Date(todo.dueDate).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000,
-                      'text-gray-400': todo.completed || new Date(todo.dueDate).getTime() - new Date().getTime() >= 24 * 60 * 60 * 1000,
+                      'text-red-500': !todo.completed && new Date(todo.dueDate) < new Date(),
+                      'text-orange-500': !todo.completed && new Date(todo.dueDate).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000,
+                      'text-gray-500': todo.completed || new Date(todo.dueDate).getTime() - new Date().getTime() >= 24 * 60 * 60 * 1000,
                     }"
                   >
                     {{ formatDate(todo.dueDate) }}
@@ -851,7 +851,7 @@ onMounted(async () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  class="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-6 w-6 p-0"
+                  class="text-red-500 hover:text-red-600 hover:bg-red-50 h-6 w-6 p-0"
                   @click="deleteTodo(todo.id)"
                 >
                   <Icon name="lucide:trash-2" class="w-3 h-3" />
