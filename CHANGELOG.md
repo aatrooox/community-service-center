@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.1.30
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.29...v0.1.30)
+
+### 🚀 Enhancements
+
+- 打包文件携带版本号 ([8faaba6](https://github.com/aatrooox/community-service-center/commit/8faaba6))
+
+### 🏡 Chore
+
+- Update Tauri version for patch release ([3ab90d3](https://github.com/aatrooox/community-service-center/commit/3ab90d3))
+- **release:** V0.1.29 ([5195790](https://github.com/aatrooox/community-service-center/commit/5195790))
+- Update Tauri version for patch release ([6b56b12](https://github.com/aatrooox/community-service-center/commit/6b56b12))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.29
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.28...v0.1.29)
