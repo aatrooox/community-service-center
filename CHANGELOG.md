@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.31
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.30...v0.1.31)
+
+### 🚀 Enhancements
+
+- 重构页面为像素风格设计 ([1aee741](https://github.com/aatrooox/community-service-center/commit/1aee741))
+
+### 🏡 Chore
+
+- Update Tauri version for patch release ([6fb89a8](https://github.com/aatrooox/community-service-center/commit/6fb89a8))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.30
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.29...v0.1.30)
