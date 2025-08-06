@@ -1,46 +1,6 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
 
 :root {
   --card: oklch(1 0 0);
@@ -113,11 +73,203 @@
   --sidebar-ring: oklch(0.442 0.017 285.786);
 }
 
+/* 像素风格 CSS 变量 */
+:root {
+  /* 像素风格主色调 */
+  --pixel-cyan: oklch(70% 0.15 195);
+  --pixel-cyan-light: oklch(80% 0.1 195);
+  --pixel-cyan-dark: oklch(60% 0.2 195);
+  
+  /* 像素风格背景色 */
+  --pixel-bg-primary: oklch(25% 0.05 250);
+  --pixel-bg-secondary: oklch(30% 0.05 250);
+  --pixel-bg-tertiary: oklch(35% 0.05 250);
+  --pixel-bg-dark: oklch(20% 0.05 250);
+  
+  /* 像素风格文字色 */
+  --pixel-text-primary: oklch(90% 0.02 250);
+  --pixel-text-secondary: oklch(75% 0.03 250);
+  --pixel-text-muted: oklch(50% 0.03 250);
+  
+  /* 像素风格状态色 */
+  --pixel-green: oklch(70% 0.15 145);
+  --pixel-red: oklch(65% 0.15 25);
+  --pixel-yellow: oklch(75% 0.15 85);
+  --pixel-blue: oklch(70% 0.15 220);
+  
+  /* 像素风格边框色 */
+  --pixel-border: oklch(40% 0.05 250);
+  --pixel-border-light: oklch(45% 0.05 250);
+  --pixel-border-dark: oklch(35% 0.05 250);
+}
+
+/* 像素风格公共类 */
+/* 像素卡片 */
+.pixel-card {
+  background: var(--pixel-bg-secondary);
+  border: 2px solid var(--pixel-border);
+  padding: 1rem;
+  box-shadow: 
+    2px 2px 0 var(--pixel-border-dark),
+    4px 4px 0 var(--pixel-border);
+  image-rendering: pixelated;
+}
+
+/* 像素按钮 */
+.pixel-btn {
+  background: var(--pixel-bg-secondary);
+  border: 2px solid var(--pixel-border);
+  color: var(--pixel-text-primary);
+  padding: 0.5rem 1rem;
+  font-family: ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 2px 2px 0 var(--pixel-border-dark);
+  transition: all 0.15s ease;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.pixel-btn:hover {
+  background: var(--pixel-bg-tertiary);
+  border-color: var(--pixel-border-light);
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 var(--pixel-border-dark);
+}
+
+.pixel-btn:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 var(--pixel-border-dark);
+}
+
+.pixel-btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* 像素进度条 */
+.pixel-progress {
+  width: 100%;
+  height: 0.75rem;
+  background: var(--pixel-bg-primary);
+  border: 2px solid var(--pixel-border);
+  position: relative;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+.pixel-progress-fill {
+  height: 100%;
+  background: var(--pixel-cyan);
+  transition: width 0.3s ease;
+}
+
+.pixel-progress-small {
+  height: 0.5rem;
+}
+
+/* 像素状态 */
+.pixel-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+}
+
+.pixel-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  image-rendering: pixelated;
+}
+
+.pixel-status-online {
+  background: var(--pixel-green);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+.pixel-status-offline {
+  background: var(--pixel-red);
+}
+
+.pixel-status-warning {
+  background: var(--pixel-yellow);
+}
+
+/* 像素文字 */
+.pixel-text-cyan {
+  color: var(--pixel-cyan);
+  text-shadow: 0 0 4px rgba(8, 145, 178, 0.5);
+}
+
+.pixel-text-green {
+  color: var(--pixel-green);
+  text-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
+}
+
+/* 像素网格背景 */
+.pixel-grid-bg {
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-size: 8px 8px, 4px 4px;
+  image-rendering: pixelated;
+}
+
+/* 像素边框 */
+.pixel-border {
+  border: 2px solid var(--pixel-border);
+  image-rendering: pixelated;
+}
+
+.pixel-border-light {
+  border: 2px solid var(--pixel-border-light);
+}
+
+.pixel-border-dark {
+  border: 2px solid var(--pixel-border-dark);
+}
+
+/* 像素风格页面头部 */
+.pixel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 2px solid var(--pixel-border);
+  background: var(--pixel-bg-secondary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 0.5rem;
+  image-rendering: pixelated;
+}
+
+.pixel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--pixel-cyan);
+  filter: drop-shadow(0 0 8px rgba(8, 145, 178, 0.8));
+  font-family: ui-monospace, monospace;
+}
+
+.pixel-icon {
+  font-size: 1.25rem;
+  image-rendering: pixelated;
+}
+
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
 }

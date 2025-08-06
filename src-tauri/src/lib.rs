@@ -1,5 +1,5 @@
 use log;
-use tauri_plugin_log;
+use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_notification;
 use tauri_plugin_sql::{Migration, MigrationKind};
 use tauri_plugin_store;
@@ -71,82 +71,77 @@ pub fn run() {
               );",
               kind: MigrationKind::Up,
             },
-            // Migration 5: 创建 todo_categories 表
+            // Migration 5: 创建 link_entities 表
             Migration {
               version: 5,
-              description: "create_todo_categories_table",
-              sql: "CREATE TABLE IF NOT EXISTS todo_categories (
-                id TEXT PRIMARY KEY,
+              description: "create_link_entities_table",
+              sql: "CREATE TABLE IF NOT EXISTS link_entities (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 description TEXT,
+                affection_points INTEGER NOT NULL DEFAULT 0,
                 color TEXT NOT NULL,
                 icon TEXT NOT NULL,
+                start_date TEXT,
+                end_date TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );",
+              kind: MigrationKind::Up,
+            },
+            // Migration 6: 创建 link_tags 表
+            Migration {
+              version: 6,
+              description: "create_link_tags_table",
+              sql: "CREATE TABLE IF NOT EXISTS link_tags (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                color TEXT NOT NULL DEFAULT '#10b981',
                 sort_order INTEGER NOT NULL DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
               );",
               kind: MigrationKind::Up,
             },
-            // Migration 6: 创建 todo_tags 表
-            Migration {
-              version: 6,
-              description: "create_todo_tags_table",
-              sql: "CREATE TABLE IF NOT EXISTS todo_tags (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                parent_id TEXT,
-                level INTEGER NOT NULL DEFAULT 1,
-                color TEXT NOT NULL,
-                sort_order INTEGER NOT NULL DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (parent_id) REFERENCES todo_tags (id) ON DELETE CASCADE
-              );",
-              kind: MigrationKind::Up,
-            },
-            // Migration 7: 创建 todos 表
+            // Migration 7: 创建 link_tasks 表
             Migration {
               version: 7,
-              description: "create_todos_table",
-              sql: "CREATE TABLE IF NOT EXISTS todos (
-                id TEXT PRIMARY KEY,
+              description: "create_link_tasks_table",
+              sql: "CREATE TABLE IF NOT EXISTS link_tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 description TEXT,
                 completed BOOLEAN NOT NULL DEFAULT 0,
                 priority INTEGER NOT NULL DEFAULT 2,
                 due_date DATETIME,
-                category_id TEXT,
+                entity_id INTEGER NOT NULL,
+                tag_id INTEGER,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (category_id) REFERENCES todo_categories (id) ON DELETE SET NULL
+                FOREIGN KEY (entity_id) REFERENCES link_entities (id) ON DELETE CASCADE,
+                FOREIGN KEY (tag_id) REFERENCES link_tags (id) ON DELETE SET NULL
               );",
               kind: MigrationKind::Up,
             },
-            // Migration 8: 创建 todo_tag_relations 表
-            Migration {
-              version: 8,
-              description: "create_todo_tag_relations_table",
-              sql: "CREATE TABLE IF NOT EXISTS todo_tag_relations (
-                todo_id TEXT NOT NULL,
-                tag_id TEXT NOT NULL,
-                PRIMARY KEY (todo_id, tag_id),
-                FOREIGN KEY (todo_id) REFERENCES todos (id) ON DELETE CASCADE,
-                FOREIGN KEY (tag_id) REFERENCES todo_tags (id) ON DELETE CASCADE
-              );",
-              kind: MigrationKind::Up,
-            },
+
           ],
         )
         .build()
     )
-    .setup(|app| {
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
-      }
+    .plugin(
+      tauri_plugin_log::Builder::new()
+        .targets([
+          Target::new(TargetKind::Stdout),
+          Target::new(TargetKind::Webview),
+        ])
+        .level(if cfg!(debug_assertions) {
+          log::LevelFilter::Debug
+        } else {
+          log::LevelFilter::Info
+        })
+        .build(),
+    )
+    .setup(|_app| {
       Ok(())
     })
     .run(tauri::generate_context!())

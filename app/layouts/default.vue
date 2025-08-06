@@ -23,11 +23,11 @@ const appNavBar = [
     path: '/connect',
     icon: 'lucide:briefcase',
   },
-  {
-    name: '工具',
-    path: '/tools',
-    icon: 'lucide:tool-case',
-  },
+  // {
+  //   name: '工具',
+  //   path: '/tools',
+  //   icon: 'lucide:tool-case',
+  // },
   {
     name: '设置',
     path: '/settings',
@@ -42,143 +42,214 @@ const appNavBar = [
     <AppDynamicIsland />
     <!-- 全局 Toast 组件 -->
     <Sonner />
-    <!-- 主要内容区域 -->
-    <main class="pixel-main">
-      <slot />
-    </main>
 
-    <!-- 像素风格底部导航 -->
-    <nav class="pixel-nav">
-      <div class="pixel-nav-container">
-        <NuxtLink
-          v-for="nav in appNavBar"
-          :key="nav.path"
-          :to="nav.path"
-          class="pixel-nav-item"
-          :class="{ active: $route.path === nav.path }"
-        >
-          <Icon :name="nav.icon" class="pixel-nav-icon" />
-          <span class="pixel-nav-text">{{ nav.name }}</span>
-        </NuxtLink>
-      </div>
-    </nav>
+    <!-- PC端布局：左侧导航 + 右侧内容 -->
+    <div class="hidden lg:flex min-h-screen w-full relative">
+      <!-- PC端悬浮左侧导航 -->
+      <aside class="pixel-sidebar-floating">
+        <div class="pixel-sidebar-header">
+          <Icon name="lucide:building-2" class="pixel-sidebar-logo" />
+        </div>
+        <nav class="pixel-sidebar-nav">
+          <NuxtLink
+            v-for="nav in appNavBar"
+            :key="nav.path"
+            :to="nav.path"
+            class="pixel-sidebar-item"
+            :class="{ active: $route.path === nav.path }"
+          >
+            <Icon :name="nav.icon" class="pixel-sidebar-icon" />
+            <span class="pixel-sidebar-text">{{ nav.name }}</span>
+          </NuxtLink>
+        </nav>
+      </aside>
+
+      <!-- PC端内容区域 -->
+      <main class="pixel-desktop-main-floating">
+        <slot />
+      </main>
+    </div>
+
+    <!-- 移动端布局：内容 + 底部导航 -->
+    <div class="lg:hidden flex flex-col min-h-screen relative">
+      <!-- 移动端内容区域 -->
+      <main class="pixel-main">
+        <slot />
+      </main>
+
+      <!-- 移动端悬浮底部导航 -->
+      <nav class="pixel-nav-floating">
+        <div class="pixel-nav-container">
+          <NuxtLink
+            v-for="nav in appNavBar"
+            :key="nav.path"
+            :to="nav.path"
+            class="pixel-nav-item"
+            :class="{ active: $route.path === nav.path }"
+          >
+            <Icon :name="nav.icon" class="pixel-nav-icon" />
+            <span class="pixel-nav-text">{{ nav.name }}</span>
+          </NuxtLink>
+        </div>
+      </nav>
+    </div>
   </div>
 </template>
 
 <style scoped>
+@reference 'tailwindcss';
+
+/* 使用公共像素风格变量和类 */
 .pixel-layout {
-  min-height: 100vh;
-  background-color: oklch(0.269 0.006 274.872);
-  font-family: 'Courier New', 'Consolas', monospace;
+  @apply min-h-screen bg-[var(--pixel-bg-primary)];
+  font-family:
+    ui-monospace, SFMono-Regular, 'Cascadia Code', 'Segoe UI Mono', 'Liberation Mono', Menlo, Monaco, Consolas,
+    'Courier New', monospace;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 }
 
 .pixel-main {
-  overflow-y: auto;
-  padding-bottom: 80px;
-  min-height: calc(100vh - 64px);
+  @apply overflow-y-auto pb-24 min-h-[calc(100vh-80px)];
 }
 
-.pixel-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: oklch(0.269 0.006 274.872);
-  border-top: 2px solid oklch(0.215 0.006 264.081);
+/* 移动端悬浮底部导航栏样式 */
+.pixel-nav-floating {
+  @apply fixed bottom-6 left-6 right-6 bg-[var(--pixel-bg-secondary)] border-2 border-[var(--pixel-border-dark)] z-50 h-16;
   box-shadow:
-    0 -4px 0 oklch(0.144 0.004 285.823),
-    0 -8px 0 oklch(0.144 0.004 285.823);
-  z-index: 1000;
+    2px 2px 0 var(--pixel-border-dark),
+    4px 4px 0 var(--pixel-border-dark);
+  border-radius: 0;
 }
 
 .pixel-nav-container {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  height: 64px;
-  padding: 0 8px;
+  @apply flex justify-around items-center h-full px-4;
 }
 
 .pixel-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 12px;
-  color: oklch(0.704 0.04 256.788);
-  text-decoration: none;
-  transition: all 0.15s ease;
-  border: 2px solid transparent;
-  border-radius: 0;
-  min-width: 64px;
-  position: relative;
+  @apply flex flex-col items-center justify-center gap-1 px-3 py-2 text-[var(--pixel-text-secondary)] no-underline transition-all duration-150 border-2 border-transparent rounded-none min-w-[64px] relative;
 }
 
 .pixel-nav-item:hover {
-  color: oklch(0.715 0.143 215.221);
-  background-color: oklch(0.215 0.006 264.081);
-  border-color: oklch(0.144 0.004 285.823);
-  transform: translateY(-1px);
+  @apply text-[var(--pixel-cyan)] bg-[var(--pixel-bg-tertiary)] border-[var(--pixel-border-dark)] -translate-y-px;
+  box-shadow: 2px 2px 0 var(--pixel-border-dark);
 }
 
 .pixel-nav-item.active {
-  color: oklch(0.715 0.143 215.221);
-  background-color: oklch(0.215 0.006 264.081);
-  border-color: oklch(0.715 0.143 215.221);
+  @apply text-[var(--pixel-cyan)] bg-[var(--pixel-bg-tertiary)] border-[var(--pixel-cyan)];
   box-shadow:
-    2px 2px 0 oklch(0.144 0.004 285.823),
-    4px 4px 0 oklch(0.144 0.004 285.823);
+    2px 2px 0 var(--pixel-border-dark),
+    4px 4px 0 var(--pixel-border-dark);
 }
 
 .pixel-nav-item:active {
-  transform: translateY(1px);
-  box-shadow:
-    1px 1px 0 oklch(0.144 0.004 285.823),
-    2px 2px 0 oklch(0.144 0.004 285.823);
+  @apply translate-y-px;
+  box-shadow: 1px 1px 0 var(--pixel-border-dark);
 }
 
 .pixel-nav-icon {
-  width: 20px;
-  height: 20px;
+  @apply w-5 h-5;
   image-rendering: pixelated;
 }
 
 .pixel-nav-text {
-  font-size: 10px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: 1;
+  @apply text-[10px] font-bold uppercase tracking-wide leading-none;
+}
+
+/* PC端悬浮侧边导航栏样式 */
+.pixel-sidebar-floating {
+  @apply fixed left-6 top-6 bottom-6 w-36 bg-[var(--pixel-bg-secondary)] border-2 border-[var(--pixel-border-dark)] z-50;
+  box-shadow:
+    2px 2px 0 var(--pixel-border-dark),
+    4px 4px 0 var(--pixel-border-dark);
+  border-radius: 0;
+}
+
+.pixel-sidebar-header {
+  @apply flex items-center justify-center p-6 border-b-2 border-[var(--pixel-border-dark)] bg-[var(--pixel-bg-tertiary)];
+}
+
+.pixel-sidebar-logo {
+  @apply w-8 h-8 text-[var(--pixel-cyan)];
+  image-rendering: pixelated;
+}
+
+.pixel-sidebar-title {
+  @apply text-[var(--pixel-cyan)] font-bold text-lg;
+}
+
+.pixel-sidebar-nav {
+  @apply p-4 space-y-2 flex-1 overflow-y-auto;
+}
+
+.pixel-sidebar-item {
+  @apply flex items-center gap-3 px-4 py-3 text-[var(--pixel-text-secondary)] no-underline transition-all duration-150 border-2 border-transparent rounded-none;
+}
+
+.pixel-sidebar-item:hover {
+  @apply text-[var(--pixel-cyan)] bg-[var(--pixel-bg-tertiary)] border-[var(--pixel-border-dark)] -translate-x-px;
+  box-shadow: 2px 2px 0 var(--pixel-border-dark);
+}
+
+.pixel-sidebar-item.active {
+  @apply text-[var(--pixel-cyan)] bg-[var(--pixel-bg-tertiary)] border-[var(--pixel-cyan)];
+  box-shadow:
+    2px 2px 0 var(--pixel-border-dark),
+    4px 4px 0 var(--pixel-border-dark);
+}
+
+.pixel-sidebar-item:active {
+  @apply translate-x-px;
+  box-shadow: 1px 1px 0 var(--pixel-border-dark);
+}
+
+.pixel-sidebar-icon {
+  @apply w-5 h-5;
+  image-rendering: pixelated;
+}
+
+.pixel-sidebar-text {
+  @apply font-bold text-sm;
+}
+
+.pixel-desktop-main-floating {
+  @apply flex-1 overflow-auto bg-[var(--pixel-bg-primary)] ml-48 mr-6 my-6 border-2 border-[var(--pixel-border-dark)];
+  box-shadow:
+    inset 0 2px 8px 0 var(--pixel-border-dark),
+    2px 2px 0 var(--pixel-border-dark);
 }
 
 /* 响应式设计 */
 @media (max-width: 640px) {
+  .pixel-nav-floating {
+    @apply left-4 right-4 bottom-4;
+  }
+
   .pixel-nav-container {
-    padding: 0 4px;
+    @apply px-2;
   }
 
   .pixel-nav-item {
-    min-width: 60px;
-    padding: 6px 8px;
+    @apply min-w-[60px] px-2 py-1;
   }
 
   .pixel-nav-text {
-    font-size: 9px;
+    @apply text-[9px];
+  }
+
+  .pixel-main {
+    @apply pb-28;
   }
 }
 
 @media (min-width: 1024px) {
   .pixel-main {
-    padding-bottom: 0;
-    margin-bottom: 0;
+    @apply pb-0 mb-0;
   }
 
-  .pixel-nav {
-    display: none;
+  .pixel-nav-floating {
+    @apply hidden;
   }
 }
 </style>

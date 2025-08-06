@@ -296,360 +296,344 @@ async function toggleTokenStatus(id: number, isActive: boolean) {
 </script>
 
 <template>
-  <div class="container mx-auto pb-20 px-6 space-y-6 pt-10 sm:pt-4">
-    <!-- 页面标题 -->
-    <div class="text-center">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">
-        设置
-      </h1>
-      <p class="text-gray-600">
-        管理个人信息和服务器配置
-      </p>
+  <div class="pixel-dashboard px-6 py-8 md:px-8 md:py-10 max-w-5xl mx-auto">
+    <!-- 像素风格页面头部 -->
+    <div class="pixel-header">
+      <div class="pixel-title">
+        <span class="pixel-title text-[var(--pixel-text-primary)]">
+          <span class="pixel-icon">⚙️</span>
+          <span>SYSTEM CONFIG</span>
+        </span>
+        <div class="pixel-status">
+          <span class="pixel-status-dot online" />
+          <span>ACTIVE</span>
+        </div>
+      </div>
     </div>
+    <div>
+      <!-- 主要内容区域 -->
+      <div class="pixel-content">
+        <!-- 错误提示 -->
+        <div v-if="error" class="pixel-card mb-4 border-[var(--pixel-red)] bg-red-900/20">
+          <div class="pixel-card-header">
+            <span class="pixel-card-title text-[var(--pixel-red)]">⚠️ ERROR</span>
+          </div>
+          <p class="text-[var(--pixel-red)] font-mono text-sm">
+            {{ error }}
+          </p>
+        </div>
 
-    <!-- 错误提示 -->
-    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
-      {{ error }}
-    </div>
-    <!-- BaseURL 管理 -->
-    <Card class="bg-white border-gray-200 shadow-sm">
-      <CardHeader>
-        <CardTitle class="text-gray-900 flex items-center gap-2">
-          <Icon name="lucide:link" class="w-5 h-5" />
-          BaseURL 管理
-        </CardTitle>
-        <CardDescription class="text-gray-600">
-          管理服务器 API 的基础 URL 列表
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-4">
-        <!-- 添加新 BaseURL -->
-        <div class="border border-gray-300 rounded-lg p-4 space-y-4">
-          <h3 class="text-lg font-medium text-gray-900">
-            添加新 BaseURL
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label for="url-name" class="text-gray-700 text-sm font-medium">名称</label>
-              <Input
-                id="url-name"
-                v-model="newBaseUrl.name"
-                placeholder="例如：Umami API"
-                class="bg-gray-50 border-gray-300 text-gray-900"
-              />
+        <!-- BaseURL 管理 -->
+        <div class="pixel-card mb-4">
+          <div class="pixel-card-header">
+            <span class="pixel-card-title text-[var(--pixel-text-primary)]">🔗 BASEURL MANAGER</span>
+          </div>
+          <div class="space-y-4">
+            <!-- 添加新 BaseURL -->
+            <div class="pixel-card bg-[var(--pixel-bg-tertiary)] border-[var(--pixel-border-light)]">
+              <div class="pixel-card-header">
+                <span class="pixel-card-title text-[var(--pixel-text-primary)] text-sm">➕ ADD NEW BASEURL</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="space-y-2">
+                  <label class="text-[var(--pixel-text-secondary)] text-xs font-mono font-bold uppercase tracking-wider">NAME</label>
+                  <Input
+                    v-model="newBaseUrl.name"
+                    placeholder="UMAMI API"
+                    class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono placeholder-[var(--pixel-text-muted)]"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[var(--pixel-text-secondary)] text-xs font-mono font-bold uppercase tracking-wider">URL</label>
+                  <Input
+                    v-model="newBaseUrl.url"
+                    placeholder="https://api.example.com"
+                    class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono placeholder-[var(--pixel-text-muted)]"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2 mb-4">
+                <label class="text-[var(--pixel-text-secondary)] text-xs font-mono font-bold uppercase tracking-wider">DESCRIPTION</label>
+                <Input
+                  v-model="newBaseUrl.description"
+                  placeholder="API PURPOSE DESCRIPTION"
+                  class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono placeholder-[var(--pixel-text-muted)]"
+                />
+              </div>
+              <Button
+                :disabled="!newBaseUrl.name || !newBaseUrl.url"
+                class="pixel-btn bg-[var(--pixel-green)] hover:bg-[var(--pixel-green)]/80 font-mono uppercase tracking-wider"
+                @click="addBaseUrl"
+              >
+                <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                ADD BASEURL
+              </Button>
             </div>
-            <div class="space-y-2">
-              <label for="url-value" class="text-gray-700 text-sm font-medium">URL</label>
-              <Input
-                id="url-value"
-                v-model="newBaseUrl.url"
-                placeholder="https://api.example.com"
-                class="bg-gray-50 border-gray-300 text-gray-900"
-              />
+
+            <!-- BaseURL 列表 -->
+            <div v-if="serverConfig.baseUrls.length > 0" class="space-y-3">
+              <h3 class="text-[var(--pixel-text-primary)] font-mono font-bold uppercase tracking-wider text-sm">
+                📋 CONFIGURED BASEURLS
+              </h3>
+              <div class="space-y-2">
+                <div
+                  v-for="baseUrl in serverConfig.baseUrls"
+                  :key="baseUrl.id"
+                  class="pixel-card bg-[var(--pixel-bg-secondary)] border-[var(--pixel-border-light)] flex items-center justify-between p-3"
+                >
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <Badge class="bg-[var(--pixel-blue)] text-[var(--pixel-text-primary)] font-mono border-[var(--pixel-border)]">
+                        {{ baseUrl.name }}
+                      </Badge>
+                    </div>
+                    <p class="text-[var(--pixel-text-primary)] text-sm font-mono">
+                      {{ baseUrl.url }}
+                    </p>
+                    <p v-if="baseUrl.description" class="text-[var(--pixel-text-secondary)] text-xs font-mono mt-1">
+                      {{ baseUrl.description }}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    class="pixel-btn bg-[var(--pixel-red)] hover:bg-[var(--pixel-red)]/80 font-mono"
+                    @click="removeBaseUrl(baseUrl.id)"
+                  >
+                    <Icon name="lucide:trash" class="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="space-y-2">
-            <label for="url-description" class="text-gray-700 text-sm font-medium">描述（可选）</label>
-            <Input
-              id="url-description"
-              v-model="newBaseUrl.description"
-              placeholder="API 用途描述"
-              class="bg-gray-50 border-gray-300 text-gray-900"
-            />
+        </div>
+
+        <!-- 服务器配置 -->
+        <div class="pixel-card mb-4">
+          <div class="pixel-card-header">
+            <span class="pixel-card-title text-[var(--pixel-text-primary)]">🖥️ SERVER CONFIG</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="space-y-2">
+              <label class="text-[var(--pixel-text-secondary)] text-xs font-mono font-bold uppercase tracking-wider">UMAMI API BASEURL</label>
+              <Select v-model="serverConfig.umamiApiBaseUrl">
+                <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono">
+                  <SelectValue placeholder="SELECT UMAMI API BASEURL" />
+                </SelectTrigger>
+                <SelectContent class="bg-[var(--pixel-bg-secondary)] border-2 border-[var(--pixel-border)]">
+                  <SelectItem
+                    v-for="baseUrl in serverConfig.baseUrls"
+                    :key="baseUrl.id"
+                    :value="baseUrl.url"
+                    class="text-[var(--pixel-text-primary)] font-mono hover:bg-[var(--pixel-bg-tertiary)]"
+                  >
+                    {{ baseUrl.name }} - {{ baseUrl.url }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div class="space-y-2">
+              <label class="text-[var(--pixel-text-secondary)] text-xs font-mono font-bold uppercase tracking-wider">DYNAMIC API BASEURL</label>
+              <Select v-model="serverConfig.dynamicApiBaseUrl">
+                <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono">
+                  <SelectValue placeholder="SELECT DYNAMIC API BASEURL" />
+                </SelectTrigger>
+                <SelectContent class="bg-[var(--pixel-bg-secondary)] border-2 border-[var(--pixel-border)]">
+                  <SelectItem
+                    v-for="baseUrl in serverConfig.baseUrls"
+                    :key="baseUrl.id"
+                    :value="baseUrl.url"
+                    class="text-[var(--pixel-text-primary)] font-mono hover:bg-[var(--pixel-bg-tertiary)]"
+                  >
+                    {{ baseUrl.name }} - {{ baseUrl.url }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <Button
-            :disabled="!newBaseUrl.name || !newBaseUrl.url"
-            class="bg-green-600 hover:bg-green-700"
-            @click="addBaseUrl"
+            :disabled="isLoading"
+            class="pixel-btn bg-[var(--pixel-blue)] hover:bg-[var(--pixel-blue)]/80 font-mono uppercase tracking-wider"
+            @click="saveServerConfig"
           >
-            <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
-            添加 BaseURL
+            <Icon v-if="isLoading" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+            SAVE SERVER CONFIG
           </Button>
         </div>
 
-        <!-- BaseURL 列表 -->
-        <div v-if="serverConfig.baseUrls.length > 0" class="space-y-3">
-          <h3 class="text-lg font-medium text-gray-900">
-            已配置的 BaseURL
-          </h3>
-          <div class="space-y-2">
-            <div
-              v-for="baseUrl in serverConfig.baseUrls"
-              :key="baseUrl.id"
-              class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-            >
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <Badge class="bg-blue-100 text-blue-700 border-blue-200">
-                    {{ baseUrl.name }}
-                  </Badge>
+        <!-- Token 管理 -->
+        <div class="pixel-card mb-4">
+          <div class="pixel-card-header">
+            <span class="pixel-card-title text-[var(--pixel-text-primary)]">🔑 TOKEN MANAGER</span>
+            <Dialog v-model:open="isTokenDialogOpen">
+              <DialogTrigger as-child>
+                <Button class="pixel-btn bg-[var(--pixel-green)] hover:bg-[var(--pixel-green)]/80 font-mono uppercase tracking-wider">
+                  <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                  ADD TOKEN
+                </Button>
+              </DialogTrigger>
+              <DialogContent class="pixel-card border-4 border-[var(--pixel-border)] bg-[var(--pixel-bg-secondary)] text-[var(--pixel-text-primary)]">
+                <DialogHeader>
+                  <DialogTitle class="pixel-text-cyan text-lg font-bold uppercase tracking-wider">
+                    🔑 ADD SERVER TOKEN
+                  </DialogTitle>
+                  <DialogDescription class="text-[var(--pixel-text-secondary)] font-mono text-sm">
+                    ADD ACCESS TOKEN FOR SPECIFIED SERVER
+                  </DialogDescription>
+                </DialogHeader>
+                <div class="space-y-4">
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">SERVER</label>
+                    <Select v-model="newToken.serverUrl">
+                      <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono">
+                        <SelectValue placeholder="SELECT SERVER" />
+                      </SelectTrigger>
+                      <SelectContent class="bg-[var(--pixel-bg-secondary)] border-2 border-[var(--pixel-border)]">
+                        <SelectItem
+                          v-for="baseUrl in serverConfig.baseUrls"
+                          :key="baseUrl.id"
+                          :value="baseUrl.url"
+                          class="text-[var(--pixel-text-primary)] font-mono hover:bg-[var(--pixel-bg-tertiary)]"
+                        >
+                          {{ baseUrl.name }} - {{ baseUrl.url }}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">TOKEN NAME</label>
+                    <Input
+                      v-model="newToken.tokenName"
+                      placeholder="API KEY, BEARER TOKEN"
+                      class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">TOKEN VALUE</label>
+                    <Input
+                      v-model="newToken.tokenValue"
+                      type="password"
+                      placeholder="ENTER TOKEN VALUE"
+                      class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">DESCRIPTION</label>
+                    <Textarea
+                      v-model="newToken.description"
+                      placeholder="TOKEN PURPOSE DESCRIPTION"
+                      class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
+                    />
+                  </div>
+                  <div class="flex justify-end gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      class="pixel-btn border-2 border-[var(--pixel-border)] text-[var(--pixel-text-secondary)] hover:bg-[var(--pixel-bg-tertiary)] font-mono uppercase tracking-wider"
+                      @click="isTokenDialogOpen = false"
+                    >
+                      CANCEL
+                    </Button>
+                    <Button
+                      :disabled="!newToken.serverUrl || !newToken.tokenName || !newToken.tokenValue"
+                      class="pixel-btn bg-[var(--pixel-green)] hover:bg-[var(--pixel-green)]/80 text-[var(--pixel-text-primary)] font-mono uppercase tracking-wider"
+                      @click="addServerToken"
+                    >
+                      ADD TOKEN
+                    </Button>
+                  </div>
                 </div>
-                <p class="text-gray-700 text-sm mt-1">
-                  {{ baseUrl.url }}
-                </p>
-                <p v-if="baseUrl.description" class="text-gray-500 text-xs mt-1">
-                  {{ baseUrl.description }}
-                </p>
-              </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                @click="removeBaseUrl(baseUrl.id)"
-              >
-                <Icon name="lucide:trash" class="w-4 h-4" />
-              </Button>
-            </div>
+              </DialogContent>
+            </Dialog>
           </div>
-        </div>
-      </CardContent>
-    </Card>
 
-    <!-- 服务器配置 -->
-    <Card class="bg-white border-gray-200 shadow-sm">
-      <CardHeader>
-        <CardTitle class="text-gray-900 flex items-center gap-2">
-          <Icon name="lucide:server" class="w-5 h-5" />
-          服务器配置
-        </CardTitle>
-        <CardDescription class="text-gray-600">
-          配置具体服务的 API 地址
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label for="umami-api" class="text-gray-700 text-sm font-medium">Umami API BaseURL</label>
-            <Select v-model="serverConfig.umamiApiBaseUrl">
-              <SelectTrigger class="bg-gray-50 border-gray-300 text-gray-900">
-                <SelectValue placeholder="选择 Umami API BaseURL" />
-              </SelectTrigger>
-              <SelectContent class="bg-white border-gray-300">
-                <SelectItem
-                  v-for="baseUrl in serverConfig.baseUrls"
-                  :key="baseUrl.id"
-                  :value="baseUrl.url"
-                  class="text-gray-900 hover:bg-gray-100"
-                >
-                  {{ baseUrl.name }} - {{ baseUrl.url }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div class="space-y-2">
-            <label for="dynamic-api" class="text-gray-700 text-sm font-medium">动态接口 BaseURL</label>
-            <Select v-model="serverConfig.dynamicApiBaseUrl">
-              <SelectTrigger class="bg-gray-50 border-gray-300 text-gray-900">
-                <SelectValue placeholder="选择动态接口 BaseURL" />
-              </SelectTrigger>
-              <SelectContent class="bg-white border-gray-300">
-                <SelectItem
-                  v-for="baseUrl in serverConfig.baseUrls"
-                  :key="baseUrl.id"
-                  :value="baseUrl.url"
-                  class="text-gray-900 hover:bg-gray-100"
-                >
-                  {{ baseUrl.name }} - {{ baseUrl.url }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <Button
-          :disabled="isLoading"
-          class="bg-purple-600 hover:bg-purple-700"
-          @click="saveServerConfig"
-        >
-          <Icon v-if="isLoading" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
-          保存服务器配置
-        </Button>
-      </CardContent>
-    </Card>
-
-    <!-- Token 管理 -->
-    <Card class="bg-white border-gray-200 shadow-sm">
-      <CardHeader>
-        <CardTitle class="text-gray-900 flex items-center gap-2">
-          <Icon name="lucide:key" class="w-5 h-5" />
-          Token 管理
-        </CardTitle>
-        <CardDescription class="text-gray-600">
-          管理不同服务器的访问 Token
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-4">
-        <!-- 添加 Token 按钮 -->
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-medium text-gray-900">
-            服务器 Token 列表
-          </h3>
-          <Dialog v-model:open="isTokenDialogOpen">
-            <DialogTrigger as-child>
-              <Button class="bg-green-600 hover:bg-green-700">
-                <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
-                添加 Token
-              </Button>
-            </DialogTrigger>
-            <DialogContent class="bg-white border-gray-200">
-              <DialogHeader>
-                <DialogTitle class="text-gray-900">
-                  添加服务器 Token
-                </DialogTitle>
-                <DialogDescription class="text-gray-600">
-                  为指定服务器添加访问 Token
-                </DialogDescription>
-              </DialogHeader>
-              <div class="space-y-4">
-                <div class="space-y-2">
-                  <label class="text-gray-700 text-sm font-medium">服务器</label>
-                  <Select v-model="newToken.serverUrl">
-                    <SelectTrigger class="bg-gray-50 border-gray-300 text-gray-900">
-                      <SelectValue placeholder="选择服务器" />
-                    </SelectTrigger>
-                    <SelectContent class="bg-white border-gray-300">
-                      <SelectItem
-                        v-for="baseUrl in serverConfig.baseUrls"
-                        :key="baseUrl.id"
-                        :value="baseUrl.url"
-                        class="text-gray-900 hover:bg-gray-100"
-                      >
-                        {{ baseUrl.name }} - {{ baseUrl.url }}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div class="space-y-2">
-                  <label class="text-gray-700 text-sm font-medium">Token 名称</label>
-                  <Input
-                    v-model="newToken.tokenName"
-                    placeholder="例如：API Key, Bearer Token"
-                    class="bg-gray-50 border-gray-300 text-gray-900"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-gray-700 text-sm font-medium">Token 值</label>
-                  <Input
-                    v-model="newToken.tokenValue"
-                    type="password"
-                    placeholder="输入 Token 值"
-                    class="bg-gray-50 border-gray-300 text-gray-900"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-gray-700 text-sm font-medium">描述（可选）</label>
-                  <Textarea
-                    v-model="newToken.description"
-                    placeholder="Token 用途描述"
-                    class="bg-gray-50 border-gray-300 text-gray-900"
-                  />
-                </div>
-                <div class="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    @click="isTokenDialogOpen = false"
-                  >
-                    取消
-                  </Button>
-                  <Button
-                    :disabled="!newToken.serverUrl || !newToken.tokenName || !newToken.tokenValue"
-                    class="bg-green-600 hover:bg-green-700"
-                    @click="addServerToken"
-                  >
-                    添加 Token
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <!-- Token 列表 -->
-        <div v-if="serverTokens.length > 0" class="space-y-3">
-          <div class="space-y-2">
+          <!-- Token 列表 -->
+          <div v-if="serverTokens.length > 0" class="space-y-3">
             <div
               v-for="token in serverTokens"
               :key="token.id"
-              class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg"
+              class="pixel-card bg-[var(--pixel-bg-secondary)] border-[var(--pixel-border-light)] p-4"
             >
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-2">
-                  <Badge class="bg-blue-100 text-blue-700 border-blue-200">
-                    {{ token.serverName }}
-                  </Badge>
-                  <Badge class="bg-purple-100 text-purple-700 border-purple-200">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <Badge class="bg-[var(--pixel-blue)] text-[var(--pixel-text-primary)] font-mono border-[var(--pixel-border)]">
+                      {{ token.serverName || 'SERVER' }}
+                    </Badge>
+                    <Badge
+                      :class="{
+                        'bg-[var(--pixel-green)] text-[var(--pixel-text-primary)]': token.isActive,
+                        'bg-[var(--pixel-gray)] text-[var(--pixel-text-muted)]': !token.isActive,
+                      }"
+                      class="font-mono border-[var(--pixel-border)]"
+                    >
+                      {{ token.isActive ? 'ACTIVE' : 'INACTIVE' }}
+                    </Badge>
+                  </div>
+                  <h4 class="text-[var(--pixel-text-primary)] font-mono font-bold text-sm mb-1">
                     {{ token.tokenName }}
-                  </Badge>
-                  <Badge
-                    :class="token.isActive
-                      ? 'bg-green-100 text-green-700 border-green-200'
-                      : 'bg-gray-100 text-gray-600 border-gray-300'"
-                  >
-                    {{ token.isActive ? '启用' : '禁用' }}
-                  </Badge>
+                  </h4>
+                  <p class="text-[var(--pixel-text-secondary)] text-xs font-mono mb-1">
+                    {{ token.serverUrl }}
+                  </p>
+                  <p class="text-[var(--pixel-text-muted)] text-xs font-mono mb-2">
+                    TOKEN: {{ token.tokenValue.substring(0, 8) }}***
+                  </p>
+                  <p v-if="token.description" class="text-[var(--pixel-text-secondary)] text-xs font-mono">
+                    {{ token.description }}
+                  </p>
                 </div>
-                <p class="text-gray-700 text-sm">
-                  {{ token.serverUrl }}
-                </p>
-                <p class="text-gray-600 text-xs font-mono">
-                  {{ token.tokenValue.substring(0, 20) }}***
-                </p>
-                <p v-if="token.description" class="text-gray-500 text-xs mt-1">
-                  {{ token.description }}
-                </p>
-              </div>
-              <div class="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  :class="token.isActive ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'"
-                  @click="toggleTokenStatus(Number(token.id), !token.isActive)"
-                >
-                  <Icon :name="token.isActive ? 'lucide:pause' : 'lucide:play'" class="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  @click="deleteServerToken(Number(token.id))"
-                >
-                  <Icon name="lucide:trash" class="w-4 h-4" />
-                </Button>
+                <div class="flex gap-2">
+                  <Button
+                    size="sm"
+                    :class="{
+                      'pixel-btn bg-[var(--pixel-yellow)] hover:bg-[var(--pixel-yellow)]/80': token.isActive,
+                      'pixel-btn bg-[var(--pixel-green)] hover:bg-[var(--pixel-green)]/80': !token.isActive,
+                    }"
+                    class="font-mono"
+                    @click="toggleTokenStatus(Number(token.id), !token.isActive)"
+                  >
+                    {{ token.isActive ? 'DISABLE' : 'ENABLE' }}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    class="pixel-btn bg-[var(--pixel-red)] hover:bg-[var(--pixel-red)]/80 font-mono"
+                    @click="deleteServerToken(Number(token.id))"
+                  >
+                    <Icon name="lucide:trash" class="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
+          <div v-else class="text-center py-8">
+            <p class="text-[var(--pixel-text-muted)] font-mono text-sm">
+              NO TOKENS CONFIGURED
+            </p>
+          </div>
         </div>
 
-        <div v-else class="text-center py-8">
-          <Icon name="lucide:key" class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-          <p class="text-gray-600">
-            暂无服务器 Token
-          </p>
-          <p class="text-gray-500 text-sm">
-            点击上方按钮添加第一个 Token
-          </p>
+        <!-- 危险操作 -->
+        <div class="pixel-card border-[var(--pixel-red)] bg-red-900/10">
+          <div class="pixel-card-header">
+            <span class="pixel-card-title text-[var(--pixel-red)]">⚠️ DANGER ZONE</span>
+          </div>
+          <div class="space-y-4">
+            <p class="text-[var(--pixel-text-secondary)] font-mono text-sm">
+              RESET ALL SETTINGS TO DEFAULT VALUES. THIS ACTION CANNOT BE UNDONE.
+            </p>
+            <Button
+              variant="destructive"
+              :disabled="isLoading"
+              class="pixel-btn bg-[var(--pixel-red)] hover:bg-[var(--pixel-red)]/80 font-mono uppercase tracking-wider"
+              @click="confirmResetAllSettings"
+            >
+              <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
+              RESET ALL SETTINGS
+            </Button>
+          </div>
         </div>
-      </CardContent>
-    </Card>
-
-    <!-- 危险操作 -->
-    <Card class="bg-white border-red-200 shadow-sm">
-      <CardHeader>
-        <CardTitle class="text-red-600 flex items-center gap-2">
-          <Icon name="lucide:alert-triangle" class="w-5 h-5" />
-          危险操作
-        </CardTitle>
-        <CardDescription class="text-gray-600">
-          这些操作将永久删除数据，请谨慎操作
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button
-          variant="destructive"
-          :disabled="isLoading"
-          @click="confirmResetAllSettings"
-        >
-          <Icon name="lucide:refresh-cw" class="w-4 h-4 mr-2" />
-          重置所有设置
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   </div>
 </template>

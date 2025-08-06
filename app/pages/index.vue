@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
+import { useTauriSQL } from '@/composables/useTauriSQL'
 
 // 设置页面标题
 useHead({
@@ -9,6 +10,46 @@ useHead({
 // 使用导航栏 composable
 const { setTransparent, clearNavBar } = useNavBar()
 
+// 数据库接口
+const {
+  initDatabase,
+  getAllLinkEntities,
+  getAllLinkTasks,
+  getAffectionPoints,
+} = useTauriSQL()
+
+// 数据类型定义
+interface LinkEntity {
+  id: number
+  name: string
+  description?: string
+  affectionPoints: number
+  color: string
+  icon: string
+  startDate?: string
+  endDate?: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface LinkTask {
+  id: number
+  title: string
+  description?: string
+  completed: boolean
+  priority: number
+  dueDate?: string
+  linkEntityId: number
+  tagId?: number
+  createdAt: string
+  updatedAt: string
+}
+
+// 响应式数据
+const linkEntities = ref<LinkEntity[]>([])
+const linkTasks = ref<LinkTask[]>([])
+const affectionPoints = ref<Record<number, number>>({})
+
 // 像素风数据
 const systemStats = ref({
   cpu: 68,
@@ -17,35 +58,53 @@ const systemStats = ref({
   network: 23,
 })
 
-const gameData = ref([
-  {
-    id: 1,
-    name: 'PIXEL QUEST',
-    level: 42,
-    exp: 8750,
-    maxExp: 10000,
-    status: 'ONLINE',
-    players: 1247,
-  },
-  {
-    id: 2,
-    name: 'RETRO WARS',
-    level: 38,
-    exp: 6420,
-    maxExp: 8000,
-    status: 'ONLINE',
-    players: 892,
-  },
-  {
-    id: 3,
-    name: 'NEON CITY',
-    level: 25,
-    exp: 3200,
-    maxExp: 5000,
-    status: 'OFFLINE',
-    players: 0,
-  },
-])
+// 计算前三个实体的数据
+const topEntities = computed(() => {
+  return linkEntities.value.slice(0, 3).map((entity) => {
+    const entityTasks = linkTasks.value.filter(task => task.linkEntityId === entity.id)
+    const completedTasks = entityTasks.filter(task => task.completed).length
+    const totalTasks = entityTasks.length
+    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+    const points = affectionPoints.value[entity.id] || 0
+
+    return {
+      id: entity.id,
+      name: entity.name.toUpperCase(),
+      description: entity.description || '暂无描述',
+      totalTasks,
+      completedTasks,
+      points,
+      completionRate,
+      status: totalTasks > 0 ? (completionRate === 100 ? 'COMPLETED' : 'ACTIVE') : 'INACTIVE',
+    }
+  })
+})
+
+// 数据加载函数
+async function loadEntityData() {
+  try {
+    await initDatabase()
+    const entities = await getAllLinkEntities()
+    const tasks = await getAllLinkTasks()
+
+    linkEntities.value = entities
+    linkTasks.value = tasks
+
+    // 加载积分数据
+    for (const entity of entities) {
+      const points = await getAffectionPoints(entity.id)
+      affectionPoints.value[entity.id] = points
+    }
+  }
+  catch (err) {
+    console.error('加载实体数据失败:', err)
+  }
+}
+
+// 页面初始化
+onMounted(async () => {
+  await loadEntityData()
+})
 
 const achievements = ref([
   {
@@ -110,27 +169,21 @@ onMounted(() => {
 onUnmounted(() => {
   clearNavBar()
 })
-
-// 格式化数字
-function formatNumber(num: number) {
-  return num.toLocaleString()
-}
 </script>
 
 <template>
-  <div class="pixel-dashboard">
+  <div class="pixel-dashboard px-6 py-8 md:px-8 md:py-10 max-w-5xl mx-auto">
     <!-- 顶部标题栏 -->
     <div class="pixel-header">
       <div class="pixel-title">
-        <span class="pixel-icon">🎮</span>
+        <span class="text-xl">🎮</span>
         <span>人生游戏 DLC</span>
       </div>
       <div class="pixel-status">
-        <span class="pixel-status-dot online" />
+        <span class="pixel-status-dot pixel-status-online" />
         <span>ONLINE</span>
       </div>
     </div>
-
     <!-- 主要内容区域 -->
     <div class="pixel-content">
       <!-- 系统状态卡片 -->
@@ -139,87 +192,53 @@ function formatNumber(num: number) {
           <span class="pixel-card-title">⚡ SYSTEM STATUS</span>
         </div>
         <div class="pixel-stats-grid">
-          <div class="pixel-stat">
+          <div v-for="(value, key) in systemStats" :key="key" class="pixel-stat">
             <div class="pixel-stat-label">
-              CPU
+              {{ key.toUpperCase() }}
             </div>
-            <div class="pixel-progress-bar">
-              <div class="pixel-progress-fill" :style="{ width: `${systemStats.cpu}%` }" />
+            <div class="pixel-progress">
+              <div class="pixel-progress-fill" :style="{ width: `${value}%` }" />
             </div>
             <div class="pixel-stat-value">
-              {{ systemStats.cpu }}%
-            </div>
-          </div>
-          <div class="pixel-stat">
-            <div class="pixel-stat-label">
-              MEM
-            </div>
-            <div class="pixel-progress-bar">
-              <div class="pixel-progress-fill" :style="{ width: `${systemStats.memory}%` }" />
-            </div>
-            <div class="pixel-stat-value">
-              {{ systemStats.memory }}%
-            </div>
-          </div>
-          <div class="pixel-stat">
-            <div class="pixel-stat-label">
-              DISK
-            </div>
-            <div class="pixel-progress-bar">
-              <div class="pixel-progress-fill" :style="{ width: `${systemStats.disk}%` }" />
-            </div>
-            <div class="pixel-stat-value">
-              {{ systemStats.disk }}%
-            </div>
-          </div>
-          <div class="pixel-stat">
-            <div class="pixel-stat-label">
-              NET
-            </div>
-            <div class="pixel-progress-bar">
-              <div class="pixel-progress-fill" :style="{ width: `${systemStats.network}%` }" />
-            </div>
-            <div class="pixel-stat-value">
-              {{ systemStats.network }}%
+              {{ value }}%
             </div>
           </div>
         </div>
       </div>
-
-      <!-- 游戏数据卡片 -->
+      <!-- 实体数据卡片 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
-          <span class="pixel-card-title">🎯 GAME SERVERS</span>
-          <Button class="pixel-btn pixel-btn-small">
+          <span class="pixel-card-title">🔗 链接（{{ linkEntities.length }}）</span>
+          <Button class="pixel-btn pixel-btn-small" @click="loadEntityData">
             REFRESH
           </Button>
         </div>
         <div class="pixel-game-list">
-          <div v-for="game in gameData" :key="game.id" class="pixel-game-item">
+          <div v-for="entity in topEntities" :key="entity.id" class="pixel-game-item">
             <div class="pixel-game-info">
               <div class="pixel-game-name">
-                {{ game.name }}
+                {{ entity.name }}
               </div>
               <div class="pixel-game-level">
-                LV.{{ game.level }}
+                {{ entity.description }}
               </div>
             </div>
             <div class="pixel-game-exp">
-              <div class="pixel-exp-bar">
-                <div class="pixel-exp-fill" :style="{ width: `${(game.exp / game.maxExp) * 100}%` }" />
+              <div class="pixel-progress">
+                <div class="pixel-progress-fill" :style="{ width: `${entity.completionRate}%` }" />
               </div>
-              <div class="pixel-exp-text">
-                {{ game.exp }}/{{ game.maxExp }} EXP
+              <div class="pixel-exp-text flex items-center justify-between">
+                <span class="text-orange-400 text-sm uppercase tracking-wider font-mono">
+                  <span class="font-bold">{{ entity.completedTasks }}/{{ entity.totalTasks }}</span> TASKS
+                </span>
+                <span class="text-yellow-400 text-sm uppercase tracking-wider font-mono">
+                  <span class="font-bold">{{ entity.points }}</span> POINTS
+                </span>
               </div>
-            </div>
-            <div class="pixel-game-status">
-              <span class="pixel-status-badge" :class="game.status.toLowerCase()">{{ game.status }}</span>
-              <span class="pixel-players">{{ formatNumber(game.players) }} PLAYERS</span>
             </div>
           </div>
         </div>
       </div>
-
       <!-- 成就系统 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
@@ -238,7 +257,7 @@ function formatNumber(num: number) {
                 {{ achievement.description }}
               </div>
               <div class="pixel-achievement-progress">
-                <div class="pixel-progress-bar small">
+                <div class="pixel-progress">
                   <div class="pixel-progress-fill" :style="{ width: `${achievement.progress}%` }" />
                 </div>
                 <span class="pixel-progress-text">{{ achievement.progress }}%</span>
@@ -247,7 +266,6 @@ function formatNumber(num: number) {
           </div>
         </div>
       </div>
-
       <!-- 系统日志 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
@@ -269,262 +287,126 @@ function formatNumber(num: number) {
 </template>
 
 <style scoped>
-@reference 'tailwindcss';
-
-/* 像素风格基础样式 */
+@import 'tailwindcss';
 .pixel-dashboard {
-  @apply min-h-screen bg-gray-900 font-mono;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
-  background-size: 8px 8px;
+  @apply min-h-screen font-mono;
 }
-
-/* 顶部标题栏 */
-.pixel-header {
-  @apply flex items-center justify-between p-4 bg-gray-800 border-b-2 border-gray-600;
-  box-shadow: 0 2px 0 #374151;
-}
-
-.pixel-title {
-  @apply flex items-center gap-2 text-green-400 text-lg font-bold;
-  text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
-}
-
-.pixel-icon {
-  @apply text-xl;
-  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.8));
-}
-
-.pixel-status {
-  @apply flex items-center gap-2 text-green-400 text-sm;
-}
-
-.pixel-status-dot {
-  @apply w-2 h-2 rounded-full;
-}
-
-.pixel-status-dot.online {
-  @apply bg-green-400;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-  animation: pulse 2s infinite;
-}
-
-/* 主要内容区域 */
+/* 头部样式已移至全局 tailwind.css */
 .pixel-content {
-  @apply p-4 space-y-4;
+  @apply flex flex-col gap-4;
 }
-
-/* 卡片样式 */
-.pixel-card {
-  @apply bg-gray-800 border-2 border-gray-600 p-4;
-  box-shadow:
-    2px 2px 0 #374151,
-    4px 4px 0 #1f2937;
-}
-
 .pixel-card-header {
-  @apply flex items-center justify-between mb-4 pb-2 border-b border-gray-600;
+  @apply flex justify-between items-center mb-4;
 }
-
 .pixel-card-title {
-  @apply text-cyan-400 font-bold text-sm uppercase tracking-wider;
-  text-shadow: 0 0 4px rgba(6, 182, 212, 0.5);
+  @apply text-base font-bold text-[color:var(--pixel-text-primary)];
 }
-
-/* 按钮样式 */
-.pixel-btn {
-  @apply bg-gray-700 border-2 border-gray-500 px-3 py-1 text-gray-200 text-xs font-bold uppercase tracking-wide;
-  box-shadow: 1px 1px 0 #374151;
-  transition: all 0.1s ease;
-}
-
-.pixel-btn:hover {
-  @apply bg-gray-600 border-gray-400;
-  box-shadow: 0 0 0 #374151;
-  transform: translate(1px, 1px);
-}
-
-.pixel-btn.pixel-btn-small {
-  @apply px-2 py-1 text-xs;
-}
-
-/* 系统状态网格 */
 .pixel-stats-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  @apply grid grid-cols-2 gap-4;
 }
-
 .pixel-stat {
-  @apply bg-gray-700 border border-gray-600 p-3;
+  @apply flex flex-col gap-2;
 }
-
 .pixel-stat-label {
-  @apply text-gray-300 text-xs font-bold mb-2 uppercase tracking-wider;
+  @apply text-xs font-bold text-[color:var(--pixel-text-secondary)];
 }
-
 .pixel-stat-value {
-  @apply text-green-400 text-lg font-bold mt-2;
-  text-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
+  @apply text-lg font-bold text-[color:var(--pixel-text-primary)];
 }
-
-/* 进度条样式 */
-.pixel-progress-bar {
-  @apply w-full h-3 bg-gray-900 border border-gray-600 relative overflow-hidden;
-}
-
-.pixel-progress-bar.small {
-  @apply h-2;
-}
-
-.pixel-progress-fill {
-  @apply h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-300;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-/* 游戏数据列表 */
 .pixel-game-list {
-  @apply space-y-3;
+  @apply flex flex-col gap-3;
 }
-
 .pixel-game-item {
-  @apply bg-gray-700 border border-gray-600 p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 items-center;
+  @apply grid grid-cols-3 gap-4 items-center p-3 border-2 border-[color:var(--pixel-border)] bg-[color:var(--pixel-bg-secondary)];
 }
-
 .pixel-game-info {
-  @apply flex flex-col;
-}
-
-.pixel-game-name {
-  @apply text-cyan-400 font-bold text-sm;
-}
-
-.pixel-game-level {
-  @apply text-gray-400 text-xs;
-}
-
-.pixel-game-exp {
   @apply flex flex-col gap-1;
 }
-
-.pixel-exp-bar {
-  @apply w-full h-2 bg-gray-900 border border-gray-600 relative overflow-hidden;
+.pixel-game-name {
+  @apply text-base font-bold text-[color:var(--pixel-text-primary)];
 }
-
-.pixel-exp-fill {
-  @apply h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-300;
+.pixel-game-level {
+  @apply text-xs text-[color:var(--pixel-text-secondary)];
 }
-
+.pixel-game-exp {
+  @apply flex flex-col gap-2;
+}
+.pixel-game-progress {
+  @apply flex flex-col gap-2;
+}
+.pixel-progress-text,
 .pixel-exp-text {
-  @apply text-gray-300 text-xs;
+  @apply text-xs text-[color:var(--pixel-text-secondary)];
 }
-
 .pixel-game-status {
   @apply flex flex-col gap-1;
 }
-
-.pixel-status-badge {
-  @apply px-2 py-1 text-xs font-bold uppercase border;
-}
-
-.pixel-status-badge.online {
-  @apply bg-green-900 text-green-400 border-green-600;
-}
-
-.pixel-status-badge.offline {
-  @apply bg-red-900 text-red-400 border-red-600;
-}
-
-.pixel-status-badge.maintenance {
-  @apply bg-yellow-900 text-yellow-400 border-yellow-600;
-}
-
 .pixel-players {
-  @apply text-gray-400 text-xs;
+  @apply text-xs text-[color:var(--pixel-text-secondary)];
 }
-
-/* 成就系统 */
+.pixel-achievement-count {
+  @apply text-xs text-[color:var(--pixel-text-secondary)] bg-[color:var(--pixel-bg-tertiary)] px-2 py-1 border border-[color:var(--pixel-border)];
+}
+.pixel-achievement-grid {
+  @apply grid grid-cols-1 gap-3 md:grid-cols-2;
+}
 .pixel-achievements {
-  @apply space-y-3;
+  @apply flex flex-col gap-3;
 }
-
 .pixel-achievement {
-  @apply bg-gray-700 border border-gray-600 p-3 flex gap-3 opacity-50;
-  transition: opacity 0.3s ease;
+  @apply bg-[color:var(--pixel-bg-tertiary)] p-3 flex gap-3 opacity-50 border border-[color:var(--pixel-border)] transition-opacity;
 }
-
 .pixel-achievement.unlocked {
-  @apply opacity-100 border-yellow-600;
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+  @apply opacity-100 border-[color:var(--pixel-yellow)] shadow-[0_0_8px_rgba(251,191,36,0.3)];
 }
-
 .pixel-achievement-icon {
   @apply text-2xl flex-shrink-0;
 }
-
 .pixel-achievement.unlocked .pixel-achievement-icon {
   filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.8));
 }
-
 .pixel-achievement-info {
   @apply flex-1;
 }
-
 .pixel-achievement-name {
-  @apply text-gray-200 font-bold text-sm mb-1;
+  @apply text-base font-bold text-[color:var(--pixel-text-primary)] mb-1;
 }
-
 .pixel-achievement.unlocked .pixel-achievement-name {
-  @apply text-yellow-400;
+  @apply text-[color:var(--pixel-yellow)];
 }
-
 .pixel-achievement-desc {
-  @apply text-gray-400 text-xs mb-2;
+  @apply text-xs text-[color:var(--pixel-text-secondary)] mb-2;
 }
-
 .pixel-achievement-progress {
   @apply flex items-center gap-2;
 }
-
-.pixel-progress-text {
-  @apply text-gray-400 text-xs;
-}
-
-/* 系统日志 */
 .pixel-logs {
-  @apply space-y-1 max-h-64 overflow-y-auto;
+  @apply flex flex-col gap-1 max-h-64 overflow-y-auto;
 }
-
 .pixel-log-item {
   @apply text-xs font-mono p-2 border-l-2;
 }
-
 .pixel-log-item.info {
-  @apply bg-blue-900/20 border-blue-500 text-blue-300;
+  @apply bg-blue-200/20 border-[color:var(--pixel-blue)] text-[color:var(--pixel-blue)];
 }
-
 .pixel-log-item.warning {
-  @apply bg-yellow-900/20 border-yellow-500 text-yellow-300;
+  @apply bg-yellow-200/20 border-[color:var(--pixel-yellow)] text-[color:var(--pixel-yellow)];
 }
-
 .pixel-log-item.error {
-  @apply bg-red-900/20 border-red-500 text-red-300;
+  @apply bg-red-200/20 border-[color:var(--pixel-red)] text-[color:var(--pixel-red)];
 }
-
 .pixel-log-item.success {
-  @apply bg-green-900/20 border-green-500 text-green-300;
+  @apply bg-green-200/20 border-[color:var(--pixel-green)] text-[color:var(--pixel-green)];
 }
-
 .pixel-log-time {
-  @apply text-gray-500 mr-2;
+  @apply text-[color:var(--pixel-text-muted)] mr-2;
 }
-
 .pixel-log-type {
   @apply font-bold mr-2;
 }
-
 .pixel-log-message {
-  @apply text-gray-300;
+  @apply text-[color:var(--pixel-text-secondary)];
 }
-
-/* 动画效果 */
 @keyframes pulse {
   0%,
   100% {
@@ -534,25 +416,16 @@ function formatNumber(num: number) {
     opacity: 0.5;
   }
 }
-
-/* 响应式设计 */
 @media (max-width: 640px) {
   .pixel-dashboard {
-    background-size: 4px 4px;
+    @apply bg-[length:4px_4px];
   }
-
   .pixel-header {
-    @apply p-3;
+    @apply px-3;
   }
-
   .pixel-content {
-    @apply p-3 space-y-3;
+    @apply p-3 gap-3;
   }
-
-  .pixel-card {
-    @apply p-3;
-  }
-
   .pixel-game-item {
     @apply grid-cols-1 gap-2;
   }

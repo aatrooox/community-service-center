@@ -94,158 +94,7 @@ export class SQLService {
     await db.execute('DELETE FROM settings WHERE key = ?', [key])
   }
 
-  // 待办分类操作
-  async createTodoCategory(category: any): Promise<void> {
-    const db = this.ensureDB()
-    await db.execute(
-      'INSERT INTO todo_categories (id, name, description, color, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [category.id, category.name, category.description, category.color, category.icon, category.sortOrder, category.createdAt, category.updatedAt],
-    )
-  }
-
-  async getAllTodoCategories(): Promise<any[]> {
-    const db = this.ensureDB()
-    return await db.select('SELECT * FROM todo_categories ORDER BY sort_order ASC, created_at DESC')
-  }
-
-  async deleteTodoCategory(id: string): Promise<void> {
-    const db = this.ensureDB()
-    await db.execute('DELETE FROM todo_categories WHERE id = ?', [id])
-  }
-
-  // 待办标签操作
-  async createTodoTag(tag: any): Promise<void> {
-    const db = this.ensureDB()
-    await db.execute(
-      'INSERT INTO todo_tags (id, name, parent_id, level, color, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [tag.id, tag.name, tag.parentId, tag.level, tag.color, tag.sortOrder, tag.createdAt, tag.updatedAt],
-    )
-  }
-
-  async getAllTodoTags(): Promise<any[]> {
-    const db = this.ensureDB()
-    return await db.select('SELECT * FROM todo_tags ORDER BY level ASC, sort_order ASC, created_at DESC')
-  }
-
-  async deleteTodoTag(id: string): Promise<void> {
-    const db = this.ensureDB()
-    await db.execute('DELETE FROM todo_tags WHERE id = ?', [id])
-  }
-
   // 待办事项操作
-  async createTodo(todo: any): Promise<void> {
-    const db = this.ensureDB()
-    await db.execute(
-      'INSERT INTO todos (id, title, description, completed, priority, due_date, category_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [todo.id, todo.title, todo.description, todo.completed ? 1 : 0, todo.priority, todo.dueDate, todo.categoryId, todo.createdAt, todo.updatedAt],
-    )
-
-    // 添加标签关联
-    if (todo.tagIds && todo.tagIds.length > 0) {
-      for (const tagId of todo.tagIds) {
-        await db.execute(
-          'INSERT INTO todo_tag_relations (todo_id, tag_id) VALUES (?, ?)',
-          [todo.id, tagId],
-        )
-      }
-    }
-  }
-
-  async getAllTodos(): Promise<any[]> {
-    const db = this.ensureDB()
-    const todos = await db.select(`
-      SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
-      FROM todos t
-      LEFT JOIN todo_categories c ON t.category_id = c.id
-      ORDER BY t.priority DESC, t.created_at DESC
-    `) as any[]
-
-    // 获取每个待办的标签并转换数据格式
-    for (const todo of todos) {
-      // 转换布尔值：SQLite的0/1转换为JavaScript的true/false
-      todo.completed = Boolean(todo.completed)
-
-      // 转换字段名：将数据库的下划线命名转换为驼峰命名
-      todo.categoryId = todo.category_id
-      todo.dueDate = todo.due_date
-      todo.createdAt = todo.created_at
-      todo.updatedAt = todo.updated_at
-
-      // 构建分类对象
-      if (todo.category_name) {
-        todo.category = {
-          id: todo.category_id,
-          name: todo.category_name,
-          color: todo.category_color,
-          icon: todo.category_icon,
-        }
-      }
-
-      const tags = await db.select(`
-        SELECT tg.* FROM todo_tags tg
-        JOIN todo_tag_relations tr ON tg.id = tr.tag_id
-        WHERE tr.todo_id = ?
-        ORDER BY tg.level ASC, tg.sort_order ASC
-      `, [todo.id]) as any[]
-      todo.tags = tags
-
-      // 清理临时字段
-      delete todo.category_id
-      delete todo.due_date
-      delete todo.created_at
-      delete todo.updated_at
-      delete todo.category_name
-      delete todo.category_color
-      delete todo.category_icon
-    }
-
-    return todos
-  }
-
-  async updateTodo(id: string, updates: any): Promise<void> {
-    const db = this.ensureDB()
-    const fields = []
-    const values = []
-
-    if (updates.title !== undefined) {
-      fields.push('title = ?')
-      values.push(updates.title)
-    }
-    if (updates.description !== undefined) {
-      fields.push('description = ?')
-      values.push(updates.description)
-    }
-    if (updates.completed !== undefined) {
-      fields.push('completed = ?')
-      values.push(updates.completed ? 1 : 0)
-    }
-    if (updates.priority !== undefined) {
-      fields.push('priority = ?')
-      values.push(updates.priority)
-    }
-    if (updates.dueDate !== undefined) {
-      fields.push('due_date = ?')
-      values.push(updates.dueDate)
-    }
-    if (updates.categoryId !== undefined) {
-      fields.push('category_id = ?')
-      values.push(updates.categoryId)
-    }
-
-    fields.push('updated_at = ?')
-    values.push(new Date().toISOString())
-    values.push(id)
-
-    await db.execute(
-      `UPDATE todos SET ${fields.join(', ')} WHERE id = ?`,
-      values,
-    )
-  }
-
-  async deleteTodo(id: string): Promise<void> {
-    const db = this.ensureDB()
-    await db.execute('DELETE FROM todos WHERE id = ?', [id])
-  }
 
   // 服务器 Token 操作
   async createServerToken(token: any): Promise<number> {
@@ -332,6 +181,263 @@ export class SQLService {
   async deleteServerToken(id: number): Promise<void> {
     const db = this.ensureDB()
     await db.execute('DELETE FROM server_tokens WHERE id = ?', [id])
+  }
+
+  // 链接实体操作
+  async createLinkEntity(entity: any): Promise<number> {
+    const db = this.ensureDB()
+    const result = await db.execute(
+      'INSERT INTO link_entities (name, description, affection_points, color, icon, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        entity.name,
+        entity.description || null,
+        entity.affectionPoints || 0,
+        entity.color,
+        entity.icon,
+        entity.startDate || null,
+        entity.endDate || null,
+      ],
+    )
+    return result.lastInsertId as number
+  }
+
+  async getAllLinkEntities(): Promise<any[]> {
+    const db = this.ensureDB()
+    const entities = await db.select('SELECT * FROM link_entities ORDER BY created_at DESC') as any[]
+
+    // 转换数据格式
+    return entities.map((entity: any) => ({
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      affectionPoints: entity.affection_points,
+      color: entity.color,
+      icon: entity.icon,
+      startDate: entity.start_date,
+      endDate: entity.end_date,
+      createdAt: entity.created_at,
+      updatedAt: entity.updated_at,
+    }))
+  }
+
+  async updateLinkEntity(id: number, updates: any): Promise<void> {
+    const db = this.ensureDB()
+    const fields: string[] = []
+    const values: any[] = []
+
+    if (updates.name !== undefined) {
+      fields.push('name = ?')
+      values.push(updates.name)
+    }
+    if (updates.description !== undefined) {
+      fields.push('description = ?')
+      values.push(updates.description)
+    }
+    if (updates.affectionPoints !== undefined) {
+      fields.push('affection_points = ?')
+      values.push(updates.affectionPoints)
+    }
+    if (updates.color !== undefined) {
+      fields.push('color = ?')
+      values.push(updates.color)
+    }
+    if (updates.icon !== undefined) {
+      fields.push('icon = ?')
+      values.push(updates.icon)
+    }
+    if (updates.startDate !== undefined) {
+      fields.push('start_date = ?')
+      values.push(updates.startDate)
+    }
+    if (updates.endDate !== undefined) {
+      fields.push('end_date = ?')
+      values.push(updates.endDate)
+    }
+
+    fields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(id)
+
+    await db.execute(
+      `UPDATE link_entities SET ${fields.join(', ')} WHERE id = ?`,
+      values,
+    )
+  }
+
+  async deleteLinkEntity(id: number): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM link_entities WHERE id = ?', [id])
+  }
+
+  // 链接标签操作
+  async createLinkTag(tag: any): Promise<number> {
+    const db = this.ensureDB()
+    const result = await db.execute(
+      'INSERT INTO link_tags (name, color, sort_order) VALUES (?, ?, ?)',
+      [tag.name, tag.color, tag.sortOrder || 0],
+    )
+    return result.lastInsertId as number
+  }
+
+  async getAllLinkTags(): Promise<any[]> {
+    const db = this.ensureDB()
+    const tags: any[] = await db.select('SELECT * FROM link_tags ORDER BY sort_order ASC, created_at DESC') as any[]
+
+    // 转换数据格式
+    return tags.map((tag: any) => ({
+      id: tag.id,
+      name: tag.name,
+      color: tag.color,
+      sortOrder: tag.sort_order,
+      createdAt: tag.created_at,
+      updatedAt: tag.updated_at,
+    }))
+  }
+
+  async updateLinkTag(id: number, updates: any): Promise<void> {
+    const db = this.ensureDB()
+    const fields: string[] = []
+    const values: any[] = []
+
+    if (updates.name !== undefined) {
+      fields.push('name = ?')
+      values.push(updates.name)
+    }
+    if (updates.color !== undefined) {
+      fields.push('color = ?')
+      values.push(updates.color)
+    }
+    if (updates.sortOrder !== undefined) {
+      fields.push('sort_order = ?')
+      values.push(updates.sortOrder)
+    }
+
+    fields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(id)
+
+    await db.execute(
+      `UPDATE link_tags SET ${fields.join(', ')} WHERE id = ?`,
+      values,
+    )
+  }
+
+  async deleteLinkTag(id: number): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM link_tags WHERE id = ?', [id])
+  }
+
+  // 链接任务操作
+  async createLinkTask(task: any): Promise<number> {
+    const db = this.ensureDB()
+    const result = await db.execute(
+      'INSERT INTO link_tasks (title, description, completed, priority, due_date, entity_id, tag_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [task.title, task.description || null, task.completed ? 1 : 0, task.priority, task.dueDate || null, task.entityId, task.tagId || null],
+    )
+    return result.lastInsertId as number
+  }
+
+  async getAllLinkTasks(): Promise<any[]> {
+    const db = this.ensureDB()
+    const tasks: any[] = await db.select(`
+      SELECT t.*, e.name as entity_name, e.color as entity_color, e.icon as entity_icon, tg.name as tag_name, tg.color as tag_color
+      FROM link_tasks t
+      LEFT JOIN link_entities e ON t.entity_id = e.id
+      LEFT JOIN link_tags tg ON t.tag_id = tg.id
+      ORDER BY t.priority DESC, t.created_at DESC
+    `)
+
+    return tasks.map((task: any) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      completed: Boolean(task.completed),
+      priority: task.priority,
+      dueDate: task.due_date,
+      linkEntityId: task.entity_id,
+      tagId: task.tag_id,
+      entity: task.entity_name
+        ? {
+            id: task.entity_id,
+            name: task.entity_name,
+            color: task.entity_color,
+            icon: task.entity_icon,
+          }
+        : null,
+      tag: task.tag_name
+        ? {
+            id: task.tag_id,
+            name: task.tag_name,
+            color: task.tag_color,
+          }
+        : null,
+      createdAt: task.created_at,
+      updatedAt: task.updated_at,
+    }))
+  }
+
+  async updateLinkTask(id: number, updates: any): Promise<void> {
+    const db = this.ensureDB()
+    const fields: string[] = []
+    const values: any[] = []
+
+    if (updates.title !== undefined) {
+      fields.push('title = ?')
+      values.push(updates.title)
+    }
+    if (updates.description !== undefined) {
+      fields.push('description = ?')
+      values.push(updates.description)
+    }
+    if (updates.completed !== undefined) {
+      fields.push('completed = ?')
+      values.push(updates.completed ? 1 : 0)
+    }
+    if (updates.priority !== undefined) {
+      fields.push('priority = ?')
+      values.push(updates.priority)
+    }
+    if (updates.dueDate !== undefined) {
+      fields.push('due_date = ?')
+      values.push(updates.dueDate)
+    }
+    if (updates.entityId !== undefined) {
+      fields.push('entity_id = ?')
+      values.push(updates.entityId)
+    }
+    if (updates.tagId !== undefined) {
+      fields.push('tag_id = ?')
+      values.push(updates.tagId)
+    }
+
+    fields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(id)
+
+    await db.execute(
+      `UPDATE link_tasks SET ${fields.join(', ')} WHERE id = ?`,
+      values,
+    )
+  }
+
+  async deleteLinkTask(id: number): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM link_tasks WHERE id = ?', [id])
+  }
+
+  // 积分系统操作
+  async addAffectionPoints(entityId: number, points: number): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute(
+      'UPDATE link_entities SET affection_points = affection_points + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [points, entityId],
+    )
+  }
+
+  async getAffectionPoints(entityId: number): Promise<number> {
+    const db = this.ensureDB()
+    const result = await db.select(
+      'SELECT affection_points FROM link_entities WHERE id = ?',
+      [entityId],
+    ) as any[]
+    return result[0]?.affection_points || 0
   }
 
   // 关闭数据库连接
@@ -514,17 +620,18 @@ export function useTauriSQL() {
     }
   }
 
-  // 待办分类操作
-  const createTodoCategory = async (category: any) => {
+  // 链接实体操作
+  const createLinkEntity = async (entity: any): Promise<number> => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.createTodoCategory(category)
-      console.log('分类创建成功:', category.name)
+      const newId = await sqlService.createLinkEntity(entity)
+      console.log('链接实体创建成功:', entity.name)
+      return newId
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '创建分类失败'
+      error.value = err instanceof Error ? err.message : '创建链接实体失败'
       throw err
     }
     finally {
@@ -532,16 +639,16 @@ export function useTauriSQL() {
     }
   }
 
-  const getAllTodoCategories = async () => {
+  const getAllLinkEntities = async () => {
     isLoading.value = true
     error.value = null
 
     try {
-      const categories = await sqlService.getAllTodoCategories()
-      return categories
+      const entities = await sqlService.getAllLinkEntities()
+      return entities
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '获取分类列表失败'
+      error.value = err instanceof Error ? err.message : '获取链接实体列表失败'
       throw err
     }
     finally {
@@ -549,16 +656,16 @@ export function useTauriSQL() {
     }
   }
 
-  const deleteTodoCategory = async (id: string) => {
+  const updateLinkEntity = async (id: number, updates: any) => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.deleteTodoCategory(id)
-      console.log('分类删除成功:', id)
+      await sqlService.updateLinkEntity(id, updates)
+      console.log('链接实体更新成功:', id)
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '删除分类失败'
+      error.value = err instanceof Error ? err.message : '更新链接实体失败'
       throw err
     }
     finally {
@@ -566,17 +673,16 @@ export function useTauriSQL() {
     }
   }
 
-  // 待办标签操作
-  const createTodoTag = async (tag: any) => {
+  const deleteLinkEntity = async (id: number) => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.createTodoTag(tag)
-      console.log('标签创建成功:', tag.name)
+      await sqlService.deleteLinkEntity(id)
+      console.log('链接实体删除成功:', id)
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '创建标签失败'
+      error.value = err instanceof Error ? err.message : '删除链接实体失败'
       throw err
     }
     finally {
@@ -584,16 +690,35 @@ export function useTauriSQL() {
     }
   }
 
-  const getAllTodoTags = async () => {
+  // 链接标签操作
+  const createLinkTag = async (tag: any): Promise<number> => {
     isLoading.value = true
     error.value = null
 
     try {
-      const tags = await sqlService.getAllTodoTags()
+      const newId = await sqlService.createLinkTag(tag)
+      console.log('链接标签创建成功:', tag.name)
+      return newId
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '创建链接标签失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAllLinkTags = async () => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const tags = await sqlService.getAllLinkTags()
       return tags
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '获取标签列表失败'
+      error.value = err instanceof Error ? err.message : '获取链接标签列表失败'
       throw err
     }
     finally {
@@ -601,16 +726,16 @@ export function useTauriSQL() {
     }
   }
 
-  const deleteTodoTag = async (id: string) => {
+  const updateLinkTag = async (id: number, updates: any) => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.deleteTodoTag(id)
-      console.log('标签删除成功:', id)
+      await sqlService.updateLinkTag(id, updates)
+      console.log('链接标签更新成功:', id)
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '删除标签失败'
+      error.value = err instanceof Error ? err.message : '更新链接标签失败'
       throw err
     }
     finally {
@@ -618,17 +743,16 @@ export function useTauriSQL() {
     }
   }
 
-  // 待办事项操作
-  const createTodo = async (todo: any) => {
+  const deleteLinkTag = async (id: number) => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.createTodo(todo)
-      console.log('待办创建成功:', todo.title)
+      await sqlService.deleteLinkTag(id)
+      console.log('链接标签删除成功:', id)
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '创建待办失败'
+      error.value = err instanceof Error ? err.message : '删除链接标签失败'
       throw err
     }
     finally {
@@ -636,16 +760,18 @@ export function useTauriSQL() {
     }
   }
 
-  const getAllTodos = async () => {
+  // 链接任务操作
+  const createLinkTask = async (task: any): Promise<number> => {
     isLoading.value = true
     error.value = null
 
     try {
-      const todos = await sqlService.getAllTodos()
-      return todos
+      const newId = await sqlService.createLinkTask(task)
+      console.log('链接任务创建成功:', task.title)
+      return newId
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '获取待办列表失败'
+      error.value = err instanceof Error ? err.message : '创建链接任务失败'
       throw err
     }
     finally {
@@ -653,16 +779,16 @@ export function useTauriSQL() {
     }
   }
 
-  const updateTodo = async (id: string, updates: any) => {
+  const getAllLinkTasks = async () => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.updateTodo(id, updates)
-      console.log('待办更新成功:', id)
+      const tasks = await sqlService.getAllLinkTasks()
+      return tasks
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '更新待办失败'
+      error.value = err instanceof Error ? err.message : '获取链接任务列表失败'
       throw err
     }
     finally {
@@ -670,16 +796,68 @@ export function useTauriSQL() {
     }
   }
 
-  const deleteTodo = async (id: string) => {
+  const updateLinkTask = async (id: number, updates: any) => {
     isLoading.value = true
     error.value = null
 
     try {
-      await sqlService.deleteTodo(id)
-      console.log('待办删除成功:', id)
+      await sqlService.updateLinkTask(id, updates)
+      console.log('链接任务更新成功:', id)
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : '删除待办失败'
+      error.value = err instanceof Error ? err.message : '更新链接任务失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteLinkTask = async (id: number) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.deleteLinkTask(id)
+      console.log('链接任务删除成功:', id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '删除链接任务失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  // 积分系统操作
+  const addAffectionPoints = async (entityId: number, points: number) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.addAffectionPoints(entityId, points)
+      console.log('好感度积分增加成功:', entityId, '+', points)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '增加好感度积分失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAffectionPoints = async (entityId: number) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const points = await sqlService.getAffectionPoints(entityId)
+      return points
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取好感度积分失败'
       throw err
     }
     finally {
@@ -794,17 +972,23 @@ export function useTauriSQL() {
     getAllSettings,
     deleteSetting,
 
-    // 待办相关方法
-    createTodoCategory,
-    getAllTodoCategories,
-    deleteTodoCategory,
-    createTodoTag,
-    getAllTodoTags,
-    deleteTodoTag,
-    createTodo,
-    getAllTodos,
-    updateTodo,
-    deleteTodo,
+    // 链接管理相关方法
+    createLinkEntity,
+    getAllLinkEntities,
+    updateLinkEntity,
+    deleteLinkEntity,
+    createLinkTag,
+    getAllLinkTags,
+    updateLinkTag,
+    deleteLinkTag,
+    createLinkTask,
+    getAllLinkTasks,
+    updateLinkTask,
+    deleteLinkTask,
+
+    // 积分系统相关方法
+    addAffectionPoints,
+    getAffectionPoints,
 
     // 服务器 Token 相关方法
     createServerToken,
