@@ -1,6 +1,4 @@
-@import "tailwindcss";
-
-
+@import 'tailwindcss';
 
 :root {
   --card: oklch(1 0 0);
@@ -79,24 +77,24 @@
   --pixel-cyan: oklch(70% 0.15 195);
   --pixel-cyan-light: oklch(80% 0.1 195);
   --pixel-cyan-dark: oklch(60% 0.2 195);
-  
+
   /* 像素风格背景色 */
   --pixel-bg-primary: oklch(25% 0.05 250);
   --pixel-bg-secondary: oklch(30% 0.05 250);
   --pixel-bg-tertiary: oklch(35% 0.05 250);
   --pixel-bg-dark: oklch(20% 0.05 250);
-  
+
   /* 像素风格文字色 */
   --pixel-text-primary: oklch(90% 0.02 250);
   --pixel-text-secondary: oklch(75% 0.03 250);
   --pixel-text-muted: oklch(50% 0.03 250);
-  
+
   /* 像素风格状态色 */
   --pixel-green: oklch(70% 0.15 145);
   --pixel-red: oklch(65% 0.15 25);
   --pixel-yellow: oklch(75% 0.15 85);
   --pixel-blue: oklch(70% 0.15 220);
-  
+
   /* 像素风格边框色 */
   --pixel-border: oklch(40% 0.05 250);
   --pixel-border-light: oklch(45% 0.05 250);
@@ -109,7 +107,7 @@
   background: var(--pixel-bg-secondary);
   border: 2px solid var(--pixel-border);
   padding: 1rem;
-  box-shadow: 
+  box-shadow:
     2px 2px 0 var(--pixel-border-dark),
     4px 4px 0 var(--pixel-border);
   image-rendering: pixelated;
@@ -212,10 +210,12 @@
 
 /* 像素网格背景 */
 .pixel-grid-bg {
-  background-image: 
+  background-image:
     radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0),
     radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
-  background-size: 8px 8px, 4px 4px;
+  background-size:
+    8px 8px,
+    4px 4px;
   image-rendering: pixelated;
 }
 
@@ -241,7 +241,9 @@
   padding: 1rem;
   border-bottom: 2px solid var(--pixel-border);
   background: var(--pixel-bg-secondary);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   margin-bottom: 0.5rem;
   image-rendering: pixelated;
 }
