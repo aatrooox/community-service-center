@@ -1,6 +1,6 @@
 [package]
 name = "community-service-center"
-version = "0.1.31"
+version = "0.1.32"
 description = "Community Service Center - A modern desktop application for community management"
 authors = [ "gnakzz" ]
 license = "MIT"
