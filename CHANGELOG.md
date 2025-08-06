@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.32
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.31...v0.1.32)
+
+### 🚀 Enhancements
+
+- 重构页面为像素风格设计 ([1aee741](https://github.com/aatrooox/community-service-center/commit/1aee741))
+- 重构为像素风格; 待办改为链接; 首页查询真实数据 ([591f26b](https://github.com/aatrooox/community-service-center/commit/591f26b))
+
+### 🏡 Chore
+
+- Update Tauri version for patch release ([6fb89a8](https://github.com/aatrooox/community-service-center/commit/6fb89a8))
+- **release:** V0.1.31 ([a1f2683](https://github.com/aatrooox/community-service-center/commit/a1f2683))
+- Eslint ([5b3fe10](https://github.com/aatrooox/community-service-center/commit/5b3fe10))
+- Update Tauri version for patch release ([f357e29](https://github.com/aatrooox/community-service-center/commit/f357e29))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.31
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.30...v0.1.31)
