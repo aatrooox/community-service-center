@@ -172,7 +172,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="pixel-dashboard px-6 py-8 md:px-8 md:py-10 max-w-5xl mx-auto">
+  <div class="pixel-dashboard px-6 py-8 md:px-6 md:py-10 max-w-5xl mx-auto">
     <!-- 顶部标题栏 -->
     <div class="pixel-header">
       <div class="pixel-title">
@@ -424,7 +424,7 @@ onUnmounted(() => {
     @apply px-3;
   }
   .pixel-content {
-    @apply p-3 gap-3;
+    @apply gap-3;
   }
   .pixel-game-item {
     @apply grid-cols-1 gap-2;
