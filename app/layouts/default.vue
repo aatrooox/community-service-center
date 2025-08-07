@@ -16,22 +16,22 @@ const appNavBar = [
   {
     name: '首页',
     path: '/',
-    icon: 'lucide:home',
+    icon: 'pixelarticons:home',
   },
   {
     name: '链接',
     path: '/connect',
-    icon: 'lucide:briefcase',
+    icon: 'pixelarticons:paperclip',
   },
   // {
-  //   name: '工具',
-  //   path: '/tools',
-  //   icon: 'lucide:tool-case',
+  //   name: '数据看板',
+  //   path: '/data-dashboard',
+  //   icon: 'pixelarticons:chart-bar',
   // },
   {
     name: '设置',
     path: '/settings',
-    icon: 'lucide:settings',
+    icon: 'pixelarticons:mood-neutral',
   },
 ]
 </script>
@@ -48,7 +48,7 @@ const appNavBar = [
       <!-- PC端悬浮左侧导航 -->
       <aside class="pixel-sidebar-floating">
         <div class="pixel-sidebar-header">
-          <Icon name="lucide:building-2" class="pixel-sidebar-logo" />
+          <Icon name="pixelarticons:building-skyscraper" class="pixel-sidebar-logo" />
         </div>
         <nav class="pixel-sidebar-nav">
           <NuxtLink

@@ -123,6 +123,43 @@ pub fn run() {
               );",
               kind: MigrationKind::Up,
             },
+            // Migration 8: 创建 api_endpoints 表
+            Migration {
+              version: 8,
+              description: "create_api_endpoints_table",
+              sql: "CREATE TABLE IF NOT EXISTS api_endpoints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_url TEXT NOT NULL,
+                name TEXT NOT NULL,
+                path TEXT NOT NULL,
+                method TEXT NOT NULL DEFAULT 'GET',
+                description TEXT,
+                params TEXT,
+                headers TEXT,
+                cache_duration INTEGER DEFAULT 300,
+                is_active BOOLEAN NOT NULL DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (server_url) REFERENCES servers (url) ON DELETE CASCADE
+              );",
+              kind: MigrationKind::Up,
+            },
+            // Migration 9: 创建 api_cache 表
+            Migration {
+              version: 9,
+              description: "create_api_cache_table",
+              sql: "CREATE TABLE IF NOT EXISTS api_cache (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                endpoint_id INTEGER NOT NULL,
+                cache_key TEXT NOT NULL UNIQUE,
+                data TEXT NOT NULL,
+                expires_at DATETIME NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (endpoint_id) REFERENCES api_endpoints (id) ON DELETE CASCADE
+              );",
+              kind: MigrationKind::Up,
+            },
 
           ],
         )

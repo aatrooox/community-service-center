@@ -615,16 +615,16 @@ onMounted(async () => {
           </div>
           <div class="flex items-center justify-between text-xs md:text-lg px-2 md:px-4 py-2">
             <span class="text-cyan-400 uppercase tracking-wider font-mono flex items-center gap-1">
-              <span class="font-bold">{{ linkStats.totalEntities }}</span> <Icon name="lucide:paperclip" />
+              <span class="font-bold">{{ linkStats.totalEntities }}</span> <Icon name="pixelarticons:paperclip" />
             </span>
             <span class="text-orange-400 uppercase tracking-wider font-mono flex items-center gap-1">
-              <span class="font-bold">{{ linkStats.totalTasks }}</span> <Icon name="lucide:list-todo" />
+              <span class="font-bold">{{ linkStats.totalTasks }}</span> <Icon name="pixelarticons:list-box" />
             </span>
             <span class="text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-1">
-              <span class="font-bold">{{ linkStats.completedTasks }}</span> <Icon name="lucide:check" />
+              <span class="font-bold">{{ linkStats.completedTasks }}</span> <Icon name="pixelarticons:checkbox" />
             </span>
             <span class="text-yellow-400 uppercase tracking-wider font-mono flex items-center gap-1">
-              <span class="font-bold">{{ linkStats.totalPoints }}</span> <Icon name="lucide:heart-handshake" />
+              <span class="font-bold">{{ linkStats.totalPoints }}</span> <Icon name="pixelarticons:heart" />
             </span>
           </div>
         </div>
@@ -790,7 +790,7 @@ onMounted(async () => {
               class="pixel-btn border-2 border-[var(--pixel-border)] text-[var(--pixel-text-secondary)] hover:bg-[var(--pixel-bg-tertiary)] font-mono text-xs h-8 px-2"
               @click="clearFilters"
             >
-              <Icon name="lucide:x" class="w-3 h-3" />
+              <Icon name="pixelarticons:delete" class="w-3 h-3" />
             </Button>
           </div>
         </div>
@@ -819,12 +819,12 @@ onMounted(async () => {
                   <div class="flex items-center gap-2 md:gap-4 mt-1 text-xs font-mono">
                     <div class="text-cyan-400 uppercase tracking-wider flex items-center">
                       <span>{{ getEntityTasks(entity.id).length }} </span>
-                      <Icon name="lucide:list-todo" size="0.8em" class="md:size-[1em]" />
+                      <Icon name="pixelarticons:list-box" size="0.8em" class="md:size-[1em]" />
                       <span class="hidden md:inline ml-1">TASKS</span>
                     </div>
                     <div class="text-yellow-400 uppercase tracking-wider flex items-center">
                       <span>{{ affectionPoints[entity.id] || 0 }}</span>
-                      <Icon name="lucide:heart-handshake" size="0.8em" class="md:size-[1em]" />
+                      <Icon name="pixelarticons:heart" size="0.8em" class="md:size-[1em]" />
                       <span class="hidden md:inline ml-1">PTS</span>
                     </div>
                   </div>
