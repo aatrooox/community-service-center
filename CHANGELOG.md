@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v0.1.36
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.35...v0.1.36)
+
+### 🩹 Fixes
+
+- 移除脚本里的创建 TAG，改为追加 body ([02971df](https://github.com/aatrooox/community-service-center/commit/02971df))
+
+### 🏡 Chore
+
+- Changelogen 不再创建 tag ([42d8669](https://github.com/aatrooox/community-service-center/commit/42d8669))
+- **release:** V0.1.35 ([68c346d](https://github.com/aatrooox/community-service-center/commit/68c346d))
+- **build:** Release v0.1.35 ([3471f1a](https://github.com/aatrooox/community-service-center/commit/3471f1a))
+- **release:** V0.1.35 ([4c8b9b3](https://github.com/aatrooox/community-service-center/commit/4c8b9b3))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.35
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.35...v0.1.35)
