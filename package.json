@@ -1,7 +1,7 @@
 {
   "name": "community-service-center",
   "type": "module",
-  "version": "0.1.35",
+  "version": "0.1.34",
   "private": true,
   "author": {
     "name": "aatrooox",
@@ -17,9 +17,9 @@
     "lint:fix": "eslint . --fix",
     "prepare": "husky",
     "release": "pnpm release:patch",
-    "release:patch": "npx changelogen@latest --patch --release --no-tag",
-    "release:minor": "npx changelogen@latest --minor --release --no-tag",
-    "release:major": "npx changelogen@latest --major --release --no-tag",
+    "release:patch": "npx changelogen@latest --patch --release",
+    "release:minor": "npx changelogen@latest --minor --release",
+    "release:major": "npx changelogen@latest --major --release",
     "version:update": "node scripts/update-version.js",
     "quick-release": "./scripts/quick-release.sh",
     "quick-release-patch-auto": "./scripts/quick-release.sh patch --auto",
