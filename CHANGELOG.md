@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.1.37
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.36...v0.1.37)
+
+### 🚀 Enhancements
+
+- 服务器配置; 支持管理 token 和 apis ([67ba01b](https://github.com/aatrooox/community-service-center/commit/67ba01b))
+
+### 🏡 Chore
+
+- **build:** Release v0.1.36 ([0ad6b9c](https://github.com/aatrooox/community-service-center/commit/0ad6b9c))
+- Eslint ([93be371](https://github.com/aatrooox/community-service-center/commit/93be371))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.36
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.35...v0.1.36)
