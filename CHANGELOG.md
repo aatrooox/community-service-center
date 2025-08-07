@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v0.1.33
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.32...v0.1.33)
+
+### 🚀 Enhancements
+
+- 优化移动端样式 ([48d0405](https://github.com/aatrooox/community-service-center/commit/48d0405))
+
+### 🏡 Chore
+
+- Update Tauri version for patch release ([f357e29](https://github.com/aatrooox/community-service-center/commit/f357e29))
+- **release:** V0.1.32 ([171f6fb](https://github.com/aatrooox/community-service-center/commit/171f6fb))
+- Update Tauri version for patch release ([4f0d00c](https://github.com/aatrooox/community-service-center/commit/4f0d00c))
+
+### 🎨 Styles
+
+- 移动端样式问题 ([cbdb5cc](https://github.com/aatrooox/community-service-center/commit/cbdb5cc))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.32
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.31...v0.1.32)
