@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v0.1.35
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.34...v0.1.35)
+
+### 🏡 Chore
+
+- **build:** Release v0.1.34 ([9bb7b82](https://github.com/aatrooox/community-service-center/commit/9bb7b82))
+- Changelogen 不再创建 tag ([42d8669](https://github.com/aatrooox/community-service-center/commit/42d8669))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.34
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.33...v0.1.34)
