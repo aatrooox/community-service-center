@@ -96,6 +96,36 @@ export class SQLService {
 
   // 待办事项操作
 
+  // 服务器操作
+  async createServer(server: any): Promise<number> {
+    const db = this.ensureDB()
+    try {
+      const result = await db.execute(
+        'INSERT OR IGNORE INTO servers (name, url, description, is_active) VALUES (?, ?, ?, ?)',
+        [server.name, server.url, server.description || null, server.isActive ? 1 : 0],
+      )
+      return result.lastInsertId as number
+    }
+    catch (err) {
+      // 如果是唯一约束错误，忽略它（服务器已存在）
+      if (err instanceof Error && err.message.includes('UNIQUE constraint failed')) {
+        console.log('服务器已存在，跳过创建:', server.url)
+        return 0
+      }
+      throw err
+    }
+  }
+
+  async getAllServers(): Promise<any[]> {
+    const db = this.ensureDB()
+    return await db.select('SELECT * FROM servers ORDER BY created_at DESC')
+  }
+
+  async deleteServer(id: number): Promise<void> {
+    const db = this.ensureDB()
+    await db.execute('DELETE FROM servers WHERE id = ?', [id])
+  }
+
   // 服务器 Token 操作
   async createServerToken(token: any): Promise<number> {
     const db = this.ensureDB()
@@ -865,6 +895,57 @@ export function useTauriSQL() {
     }
   }
 
+  // Server related methods
+  const createServer = async (server: any) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const result = await sqlService.createServer(server)
+      return result
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '创建服务器失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const getAllServers = async () => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const servers = await sqlService.getAllServers()
+      return servers
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '获取服务器列表失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteServer = async (id: number) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await sqlService.deleteServer(id)
+    }
+    catch (err) {
+      error.value = err instanceof Error ? err.message : '删除服务器失败'
+      throw err
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
   // Server Token related methods
   const createServerToken = async (token: any) => {
     isLoading.value = true
@@ -989,6 +1070,11 @@ export function useTauriSQL() {
     // 积分系统相关方法
     addAffectionPoints,
     getAffectionPoints,
+
+    // 服务器相关方法
+    createServer,
+    getAllServers,
+    deleteServer,
 
     // 服务器 Token 相关方法
     createServerToken,

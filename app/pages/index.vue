@@ -172,16 +172,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="pixel-dashboard px-6 py-8 md:px-6 md:py-10 max-w-5xl mx-auto">
+  <div class="pixel-dashboard px-3 py-4 md:px-6 md:py-10 max-w-5xl mx-auto">
     <!-- 顶部标题栏 -->
     <div class="pixel-header">
       <div class="pixel-title">
-        <span class="text-xl">🎮</span>
-        <span>人生游戏 DLC</span>
+        <span class="text-lg md:text-xl">🎮</span>
+        <span class="text-sm md:text-base">人生游戏 DLC</span>
       </div>
       <div class="pixel-status">
         <span class="pixel-status-dot pixel-status-online" />
-        <span>ONLINE</span>
+        <span class="text-xs md:text-sm">ONLINE</span>
       </div>
     </div>
     <!-- 主要内容区域 -->
@@ -189,7 +189,7 @@ onUnmounted(() => {
       <!-- 系统状态卡片 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
-          <span class="pixel-card-title">⚡ SYSTEM STATUS</span>
+          <span class="pixel-card-title text-sm md:text-base">⚡ SYSTEM STATUS</span>
         </div>
         <div class="pixel-stats-grid">
           <div v-for="(value, key) in systemStats" :key="key" class="pixel-stat">
@@ -208,18 +208,18 @@ onUnmounted(() => {
       <!-- 实体数据卡片 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
-          <span class="pixel-card-title">🔗 链接（{{ linkEntities.length }}）</span>
-          <Button class="pixel-btn pixel-btn-small" @click="loadEntityData">
+          <span class="pixel-card-title text-sm md:text-base">🔗 链接（{{ linkEntities.length }}）</span>
+          <Button class="pixel-btn pixel-btn-small text-xs" @click="loadEntityData">
             REFRESH
           </Button>
         </div>
         <div class="pixel-game-list">
           <div v-for="entity in topEntities" :key="entity.id" class="pixel-game-item">
             <div class="pixel-game-info">
-              <div class="pixel-game-name">
+              <div class="pixel-game-name text-sm md:text-base">
                 {{ entity.name }}
               </div>
-              <div class="pixel-game-level">
+              <div class="pixel-game-level text-xs">
                 {{ entity.description }}
               </div>
             </div>
@@ -228,10 +228,10 @@ onUnmounted(() => {
                 <div class="pixel-progress-fill" :style="{ width: `${entity.completionRate}%` }" />
               </div>
               <div class="pixel-exp-text flex items-center justify-between">
-                <span class="text-orange-400 text-sm uppercase tracking-wider font-mono">
+                <span class="text-orange-400 text-xs md:text-sm uppercase tracking-wider font-mono">
                   <span class="font-bold">{{ entity.completedTasks }}/{{ entity.totalTasks }}</span> TASKS
                 </span>
-                <span class="text-yellow-400 text-sm uppercase tracking-wider font-mono">
+                <span class="text-yellow-400 text-xs md:text-sm uppercase tracking-wider font-mono">
                   <span class="font-bold">{{ entity.points }}</span> POINTS
                 </span>
               </div>
@@ -242,7 +242,7 @@ onUnmounted(() => {
       <!-- 成就系统 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
-          <span class="pixel-card-title">🏆 ACHIEVEMENTS</span>
+          <span class="pixel-card-title text-sm md:text-base">🏆 ACHIEVEMENTS</span>
         </div>
         <div class="pixel-achievements">
           <div v-for="achievement in achievements" :key="achievement.id" class="pixel-achievement" :class="{ unlocked: achievement.unlocked }">
@@ -250,17 +250,17 @@ onUnmounted(() => {
               {{ achievement.icon }}
             </div>
             <div class="pixel-achievement-info">
-              <div class="pixel-achievement-name">
+              <div class="pixel-achievement-name text-sm md:text-base">
                 {{ achievement.name }}
               </div>
-              <div class="pixel-achievement-desc">
+              <div class="pixel-achievement-desc text-xs">
                 {{ achievement.description }}
               </div>
               <div class="pixel-achievement-progress">
                 <div class="pixel-progress">
                   <div class="pixel-progress-fill" :style="{ width: `${achievement.progress}%` }" />
                 </div>
-                <span class="pixel-progress-text">{{ achievement.progress }}%</span>
+                <span class="pixel-progress-text text-xs">{{ achievement.progress }}%</span>
               </div>
             </div>
           </div>
@@ -269,8 +269,8 @@ onUnmounted(() => {
       <!-- 系统日志 -->
       <div class="pixel-card">
         <div class="pixel-card-header">
-          <span class="pixel-card-title">📋 SYSTEM LOGS</span>
-          <Button class="pixel-btn pixel-btn-small">
+          <span class="pixel-card-title text-sm md:text-base">📋 SYSTEM LOGS</span>
+          <Button class="pixel-btn pixel-btn-small text-xs">
             CLEAR
           </Button>
         </div>
@@ -296,40 +296,40 @@ onUnmounted(() => {
   @apply flex flex-col gap-4;
 }
 .pixel-card-header {
-  @apply flex justify-between items-center mb-4;
+  @apply flex justify-between items-center mb-3 md:mb-4;
 }
 .pixel-card-title {
-  @apply text-base font-bold text-[color:var(--pixel-text-primary)];
+  @apply font-bold text-[color:var(--pixel-text-primary)];
 }
 .pixel-stats-grid {
-  @apply grid grid-cols-2 gap-4;
+  @apply grid grid-cols-2 gap-2 md:gap-4;
 }
 .pixel-stat {
-  @apply flex flex-col gap-2;
+  @apply flex flex-col gap-1 md:gap-2;
 }
 .pixel-stat-label {
   @apply text-xs font-bold text-[color:var(--pixel-text-secondary)];
 }
 .pixel-stat-value {
-  @apply text-lg font-bold text-[color:var(--pixel-text-primary)];
+  @apply text-sm md:text-lg font-bold text-[color:var(--pixel-text-primary)];
 }
 .pixel-game-list {
-  @apply flex flex-col gap-3;
+  @apply flex flex-col gap-2 md:gap-3;
 }
 .pixel-game-item {
-  @apply grid grid-cols-3 gap-4 items-center p-3 border-2 border-[color:var(--pixel-border)] bg-[color:var(--pixel-bg-secondary)];
+  @apply grid grid-cols-3 gap-2 md:gap-4 items-center p-2 md:p-3 border-2 border-[color:var(--pixel-border)] bg-[color:var(--pixel-bg-secondary)];
 }
 .pixel-game-info {
-  @apply flex flex-col gap-1;
+  @apply flex flex-col gap-0.5 md:gap-1;
 }
 .pixel-game-name {
-  @apply text-base font-bold text-[color:var(--pixel-text-primary)];
+  @apply font-bold text-[color:var(--pixel-text-primary)];
 }
 .pixel-game-level {
-  @apply text-xs text-[color:var(--pixel-text-secondary)];
+  @apply text-[color:var(--pixel-text-secondary)];
 }
 .pixel-game-exp {
-  @apply flex flex-col gap-2;
+  @apply flex flex-col gap-1 md:gap-2;
 }
 .pixel-game-progress {
   @apply flex flex-col gap-2;
@@ -351,16 +351,16 @@ onUnmounted(() => {
   @apply grid grid-cols-1 gap-3 md:grid-cols-2;
 }
 .pixel-achievements {
-  @apply flex flex-col gap-3;
+  @apply flex flex-col gap-2 md:gap-3;
 }
 .pixel-achievement {
-  @apply bg-[color:var(--pixel-bg-tertiary)] p-3 flex gap-3 opacity-50 border border-[color:var(--pixel-border)] transition-opacity;
+  @apply bg-[color:var(--pixel-bg-tertiary)] p-2 md:p-3 flex gap-2 md:gap-3 opacity-50 border border-[color:var(--pixel-border)] transition-opacity;
 }
 .pixel-achievement.unlocked {
   @apply opacity-100 border-[color:var(--pixel-yellow)] shadow-[0_0_8px_rgba(251,191,36,0.3)];
 }
 .pixel-achievement-icon {
-  @apply text-2xl flex-shrink-0;
+  @apply text-lg md:text-2xl flex-shrink-0;
 }
 .pixel-achievement.unlocked .pixel-achievement-icon {
   filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.8));
@@ -369,22 +369,22 @@ onUnmounted(() => {
   @apply flex-1;
 }
 .pixel-achievement-name {
-  @apply text-base font-bold text-[color:var(--pixel-text-primary)] mb-1;
+  @apply font-bold text-[color:var(--pixel-text-primary)] mb-1;
 }
 .pixel-achievement.unlocked .pixel-achievement-name {
   @apply text-[color:var(--pixel-yellow)];
 }
 .pixel-achievement-desc {
-  @apply text-xs text-[color:var(--pixel-text-secondary)] mb-2;
+  @apply text-[color:var(--pixel-text-secondary)] mb-1 md:mb-2;
 }
 .pixel-achievement-progress {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-1 md:gap-2;
 }
 .pixel-logs {
-  @apply flex flex-col gap-1 max-h-64 overflow-y-auto;
+  @apply flex flex-col gap-0.5 md:gap-1 max-h-48 md:max-h-64 overflow-y-auto;
 }
 .pixel-log-item {
-  @apply text-xs font-mono p-2 border-l-2;
+  @apply text-xs font-mono p-1 md:p-2 border-l-2;
 }
 .pixel-log-item.info {
   @apply bg-blue-200/20 border-[color:var(--pixel-blue)] text-[color:var(--pixel-blue)];

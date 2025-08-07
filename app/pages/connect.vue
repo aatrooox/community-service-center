@@ -565,7 +565,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="pixel-dashboard px-6 py-8 md:px-8 md:py-10 max-w-5xl mx-auto">
+  <div class="pixel-dashboard px-3 py-4 md:px-8 md:py-10 max-w-5xl mx-auto">
     <!-- 像素风格页面头部 -->
     <div class="pixel-header mb-2">
       <div class="pixel-title">
@@ -583,10 +583,7 @@ onMounted(async () => {
       <!-- 主要内容区域 -->
       <div class="pixel-content">
         <!-- 操作按钮区域 -->
-        <div class="pixel-card mb-4">
-          <div class="pixel-card-header">
-            <span class="pixel-card-title text-[var(--pixel-text-primary)]">🎮 创建</span>
-          </div>
+        <div class="hidden sm:pixel-card sm:mb-4">
           <div class="flex gap-3">
             <Button class="pixel-btn" @click="updateEntityDialog(true)">
               <Icon name="lucide:user-plus" class="w-4 h-4 mr-2" />
@@ -599,34 +596,42 @@ onMounted(async () => {
             </Button>
           </div>
         </div>
+        <!-- 移动端操作按钮 -->
+        <div class="flex gap-2 mb-3 justify-between md:hidden">
+          <Button class="pixel-btn text-xs px-3 py-2" @click="updateEntityDialog(true)">
+            <Icon name="lucide:user-plus" class="w-3 h-3 mr-1" />
+            <span class="hidden sm:inline">新活动</span><span class="sm:hidden">活动</span>
+          </Button>
 
+          <Button class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl font-medium text-xs" @click="updateTaskDialog(true)">
+            <Icon name="lucide:plus" class="w-3 h-3 mr-1" />
+            <span class="hidden sm:inline">新任务</span><span class="sm:hidden">任务</span>
+          </Button>
+        </div>
         <!-- 统计信息 -->
-        <div class="pixel-card mb-6">
-          <div class="pixel-card-header">
+        <div class="pixel-card md:mb-6 mb-4">
+          <div class="hidden md:pixel-card-header">
             <span class="pixel-card-title text-[var(--pixel-text-primary)]">📊 统计</span>
           </div>
-          <div class="flex items-center justify-between px-4 py-2">
-            <span class="text-cyan-400 text-lg uppercase tracking-wider font-mono">
-              <span class="font-bold text-xl">{{ linkStats.totalEntities }}</span> 链接
+          <div class="flex items-center justify-between text-xs md:text-lg px-2 md:px-4 py-2">
+            <span class="text-cyan-400 uppercase tracking-wider font-mono flex items-center gap-1">
+              <span class="font-bold">{{ linkStats.totalEntities }}</span> <Icon name="lucide:paperclip" />
             </span>
-            <span class="text-orange-400 text-lg uppercase tracking-wider font-mono">
-              <span class="font-bold text-xl">{{ linkStats.totalTasks }}</span> 待办
+            <span class="text-orange-400 uppercase tracking-wider font-mono flex items-center gap-1">
+              <span class="font-bold">{{ linkStats.totalTasks }}</span> <Icon name="lucide:list-todo" />
             </span>
-            <span class="text-emerald-400 text-lg uppercase tracking-wider font-mono">
-              <span class="font-bold text-xl">{{ linkStats.completedTasks }}</span> 完成
+            <span class="text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-1">
+              <span class="font-bold">{{ linkStats.completedTasks }}</span> <Icon name="lucide:check" />
             </span>
-            <span class="text-yellow-400 text-lg uppercase tracking-wider font-mono">
-              <span class="font-bold text-xl">{{ linkStats.totalPoints }}</span> 积分
+            <span class="text-yellow-400 uppercase tracking-wider font-mono flex items-center gap-1">
+              <span class="font-bold">{{ linkStats.totalPoints }}</span> <Icon name="lucide:heart-handshake" />
             </span>
           </div>
         </div>
       </div>
 
       <!-- 筛选条件 -->
-      <div class="pixel-card mb-6">
-        <div class="pixel-card-header">
-          <span class="pixel-card-title text-[var(--pixel-text-primary)]">🔍 筛选</span>
-        </div>
+      <div class="pixel-card md:mb-6 mb-2">
         <!-- 桌面端筛选栏 -->
         <div class="hidden md:grid grid-cols-4 gap-4">
           <!-- 状态筛选 -->
@@ -714,7 +719,7 @@ onMounted(async () => {
         <!-- 移动端筛选栏 -->
         <div class="md:hidden flex gap-2 overflow-x-auto pb-2">
           <!-- 状态筛选 -->
-          <div class="flex-shrink-0 min-w-[100px]">
+          <div class="min-w-[60px]">
             <Select v-model="selectedFilter">
               <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono text-xs h-8">
                 <SelectValue placeholder="状态" />
@@ -733,7 +738,7 @@ onMounted(async () => {
           </div>
 
           <!-- 链接实体筛选 -->
-          <div class="flex-shrink-0 min-w-[100px]">
+          <div class="min-w-[100px]">
             <Select v-model="selectedEntity">
               <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono text-xs h-8">
                 <SelectValue placeholder="链接" />
@@ -758,7 +763,7 @@ onMounted(async () => {
           </div>
 
           <!-- 标签筛选 -->
-          <div class="flex-shrink-0 min-w-[100px]">
+          <div class="min-w-[100px]">
             <Select v-model="selectedTag">
               <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono text-xs h-8">
                 <SelectValue placeholder="标签" />
@@ -792,7 +797,7 @@ onMounted(async () => {
       </div>
 
       <!-- 链接实体和任务列表 -->
-      <div class="space-y-6">
+      <div class="md:space-y-6 space-y-2">
         <!-- 按链接实体分组显示 -->
         <div v-for="entity in filteredEntities" :key="entity.id" class="pixel-card">
           <!-- 实体头部 -->
@@ -804,36 +809,40 @@ onMounted(async () => {
                 </div>
                 <div class="flex-1">
                   <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-bold text-[var(--pixel-text-primary)] font-mono uppercase tracking-wider">
+                    <h3 class="text-sm md:text-xl font-bold text-[var(--pixel-text-primary)] font-mono uppercase tracking-wider">
                       {{ entity.name }}
                     </h3>
-                    <p v-if="entity.description" class="text-sm text-[var(--pixel-text-secondary)] font-mono ml-4">
+                    <p v-if="entity.description" class="text-xs text-[var(--pixel-text-secondary)] font-mono ml-2 md:ml-4 hidden md:block">
                       {{ entity.description }}
                     </p>
                   </div>
-                  <div class="flex items-center gap-4 mt-1 text-xs font-mono">
-                    <span class="text-cyan-400 uppercase tracking-wider">
-                      {{ getEntityTasks(entity.id).length }} TASKS
-                    </span>
-                    <span class="text-yellow-400 uppercase tracking-wider">
-                      {{ affectionPoints[entity.id] || 0 }} POINTS
-                    </span>
+                  <div class="flex items-center gap-2 md:gap-4 mt-1 text-xs font-mono">
+                    <div class="text-cyan-400 uppercase tracking-wider flex items-center">
+                      <span>{{ getEntityTasks(entity.id).length }} </span>
+                      <Icon name="lucide:list-todo" size="0.8em" class="md:size-[1em]" />
+                      <span class="hidden md:inline ml-1">TASKS</span>
+                    </div>
+                    <div class="text-yellow-400 uppercase tracking-wider flex items-center">
+                      <span>{{ affectionPoints[entity.id] || 0 }}</span>
+                      <Icon name="lucide:heart-handshake" size="0.8em" class="md:size-[1em]" />
+                      <span class="hidden md:inline ml-1">PTS</span>
+                    </div>
                   </div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
                 <Button
                   size="sm"
-                  class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] px-4 py-2 font-mono uppercase tracking-wider"
+                  class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] px-2 md:px-4 py-1 md:py-2 font-mono uppercase tracking-wider text-xs"
                   @click="handleAddTask(entity.id)"
                 >
-                  <Icon name="lucide:plus" class="w-3 h-3 mr-1" />
-                  ADD TASK
+                  <Icon name="lucide:plus" class="w-3 h-3 mr-0 md:mr-1" />
+                  <span class="hidden md:inline">ADD</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="destructive"
-                  class="pixel-btn bg-red-600 hover:bg-red-700 text-white px-3 py-2 font-mono uppercase tracking-wider"
+                  class="pixel-btn bg-red-600 hover:bg-red-700 text-white px-2 md:px-3 py-1 md:py-2 font-mono uppercase tracking-wider text-xs"
                   @click="handleDeleteEntity(entity.id, entity.name)"
                 >
                   <Icon name="lucide:trash-2" class="w-3 h-3" />
@@ -847,26 +856,26 @@ onMounted(async () => {
             <div
               v-for="task in getEntityTasks(entity.id)"
               :key="task.id"
-              class="p-3 hover:bg-[var(--pixel-bg-tertiary)] transition-colors border-2 border-[var(--pixel-border)] shadow-lg"
+              class="p-2 md:p-3 hover:bg-[var(--pixel-bg-tertiary)] transition-colors border-2 border-[var(--pixel-border)] shadow-lg"
             >
               <!-- 紧凑单行布局 -->
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2 md:gap-3">
                 <!-- 任务标题和描述 -->
                 <div class="flex-1 min-w-0">
                   <span
-                    class="text-sm font-bold font-mono uppercase tracking-wider" :class="[
+                    class="text-xs md:text-sm font-bold font-mono uppercase tracking-wider" :class="[
                       task.completed ? 'text-[var(--pixel-text-muted)] line-through' : 'text-[var(--pixel-text-primary)]',
                     ]"
                   >
                     {{ task.title }}
                   </span>
-                  <span v-if="task.description" class="text-xs text-[var(--pixel-text-secondary)] font-mono ml-2">
+                  <span v-if="task.description" class="text-xs text-[var(--pixel-text-secondary)] font-mono ml-1 md:ml-2 hidden md:inline">
                     （{{ task.description }}）
                   </span>
                 </div>
 
                 <!-- 截止时间 -->
-                <span v-if="task.dueDate" class="text-cyan-400 uppercase tracking-wider text-xs font-mono flex-shrink-0">
+                <span v-if="task.dueDate" class="text-cyan-400 uppercase tracking-wider text-xs font-mono flex-shrink-0 hidden md:inline">
                   {{ formatDate(task.dueDate) }}
                 </span>
 
@@ -875,13 +884,14 @@ onMounted(async () => {
                   :class="getPriorityInfo(task.priority)?.color || 'bg-gray-500'"
                   class="text-xs font-mono uppercase tracking-wider flex-shrink-0 border px-1 py-0.5 text-white"
                 >
-                  {{ getPriorityInfo(task.priority)?.label || '中' }}
+                  <span class="hidden md:inline">{{ getPriorityInfo(task.priority)?.label || '中' }}</span>
+                  <span class="md:hidden">{{ (getPriorityInfo(task.priority)?.label || '中').charAt(0) }}</span>
                 </span>
 
                 <!-- 标签 -->
                 <span
                   v-if="task.tagId && linkTags.find(t => t.id === task.tagId)"
-                  class="border border-cyan-400 text-cyan-400 px-1 py-0.5 text-xs font-mono uppercase tracking-wider flex-shrink-0"
+                  class="border border-cyan-400 text-cyan-400 px-1 py-0.5 text-xs font-mono uppercase tracking-wider flex-shrink-0 hidden md:inline"
                 >
                   {{ linkTags.find(t => t.id === task.tagId)?.name }}
                 </span>
@@ -890,7 +900,7 @@ onMounted(async () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  class="text-xs px-2 py-1 font-mono border-2 rounded transition-colors flex-shrink-0 shadow-md"
+                  class="text-xs px-1.5 md:px-2 py-1 font-mono border-2 rounded transition-colors flex-shrink-0 shadow-md"
                   :class="{
                     'bg-green-600 border-green-500 text-white hover:bg-green-500': task.completed,
                     'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600': !task.completed,
@@ -905,7 +915,7 @@ onMounted(async () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  class="text-xs px-2 py-1 font-mono border-2 border-red-600 bg-red-600 text-white hover:bg-red-500 hover:border-red-500 rounded transition-colors flex-shrink-0 shadow-md"
+                  class="text-xs px-1.5 md:px-2 py-1 font-mono border-2 border-red-600 bg-red-600 text-white hover:bg-red-500 hover:border-red-500 rounded transition-colors flex-shrink-0 shadow-md"
                   title="删除任务"
                   @click="handleDeleteLinkTask(task.id)"
                 >
@@ -915,38 +925,42 @@ onMounted(async () => {
             </div>
 
             <!-- 无任务状态 -->
-            <div v-if="getEntityTasks(entity.id).length === 0" class="p-8 text-center">
-              <Icon name="lucide:clipboard-check" class="w-12 h-12 text-[var(--pixel-text-muted)] mx-auto mb-3 pixel-icon" />
-              <p class="text-sm text-[var(--pixel-text-secondary)] mb-4 font-mono uppercase tracking-wider">
-                NO MAINTENANCE TASKS
+            <div v-if="getEntityTasks(entity.id).length === 0" class="p-4 md:p-8 text-center">
+              <Icon name="lucide:clipboard-check" class="w-8 h-8 md:w-12 md:h-12 text-[var(--pixel-text-muted)] mx-auto mb-2 md:mb-3 pixel-icon" />
+              <p class="text-xs md:text-sm text-[var(--pixel-text-secondary)] mb-3 md:mb-4 font-mono uppercase tracking-wider">
+                <span class="md:hidden">NO TASKS</span>
+                <span class="hidden md:inline">NO MAINTENANCE TASKS</span>
               </p>
               <Button
                 size="sm"
-                class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] px-4 py-2 font-mono uppercase tracking-wider"
+                class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] px-2 md:px-4 py-1 md:py-2 font-mono uppercase tracking-wider text-xs"
                 @click="handleAddTask(entity.id)"
               >
-                <Icon name="lucide:plus" class="w-3 h-3 mr-1" />
-                ADD TASK
+                <Icon name="lucide:plus" class="w-3 h-3 mr-0 md:mr-1" />
+                <span class="hidden md:inline">ADD TASK</span>
               </Button>
             </div>
           </div>
         </div>
 
         <!-- 空状态 -->
-        <div v-if="filteredEntities.length === 0" class="pixel-card p-12 text-center">
-          <Icon name="lucide:users" class="w-16 h-16 text-[var(--pixel-text-muted)] mx-auto mb-6 pixel-icon" />
-          <h3 class="text-xl font-bold text-[var(--pixel-text-primary)] mb-3 font-mono uppercase tracking-wider">
-            NO LINK ENTITIES
+        <div v-if="filteredEntities.length === 0" class="pixel-card p-6 md:p-12 text-center">
+          <Icon name="lucide:users" class="w-12 h-12 md:w-16 md:h-16 text-[var(--pixel-text-muted)] mx-auto mb-3 md:mb-6 pixel-icon" />
+          <h3 class="text-sm md:text-xl font-bold text-[var(--pixel-text-primary)] mb-2 md:mb-3 font-mono uppercase tracking-wider">
+            <span class="md:hidden">NO LINKS</span>
+            <span class="hidden md:inline">NO LINK ENTITIES</span>
           </h3>
-          <p class="text-sm text-[var(--pixel-text-secondary)] mb-6 font-mono">
-            CREATE YOUR FIRST LINK ENTITY TO START MANAGING RELATIONSHIPS
+          <p class="text-xs md:text-sm text-[var(--pixel-text-secondary)] mb-4 md:mb-6 font-mono">
+            <span class="md:hidden">CREATE YOUR FIRST LINK</span>
+            <span class="hidden md:inline">CREATE YOUR FIRST LINK ENTITY TO START MANAGING RELATIONSHIPS</span>
           </p>
           <Button
-            class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] px-6 py-3 font-mono uppercase tracking-wider"
+            class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] px-3 md:px-6 py-2 md:py-3 font-mono uppercase tracking-wider text-xs md:text-sm"
             @click="updateEntityDialog(true)"
           >
-            <Icon name="lucide:user-plus" class="w-4 h-4 mr-2" />
-            CREATE LINK
+            <Icon name="lucide:user-plus" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span class="hidden md:inline">CREATE LINK</span>
+            <span class="md:hidden">CREATE</span>
           </Button>
         </div>
       </div>
@@ -957,35 +971,35 @@ onMounted(async () => {
       <DrawerContent class="pixel-card border-4 border-[var(--pixel-border)] bg-[var(--pixel-bg-secondary)] text-[var(--pixel-text-primary)]">
         <DrawerHeader>
           <DrawerTitle class="pixel-text-cyan text-lg font-bold uppercase tracking-wider">
-            CREATE NEW LINK ENTITY
+            创建新的实体
           </DrawerTitle>
           <DrawerDescription class="text-[var(--pixel-text-secondary)] font-mono text-sm">
-            ESTABLISH A RELATIONSHIP CONNECTION
+            记得增加待办，维持与实体的关系
           </DrawerDescription>
         </DrawerHeader>
 
         <div class="space-y-4">
           <div>
-            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">NAME *</label>
+            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">名称 *</label>
             <Input
               v-model="newLinkEntity.name"
-              placeholder="ENTER LINK NAME"
+              placeholder="输入名称"
               class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
             />
           </div>
 
           <div>
-            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">DESCRIPTION</label>
+            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">描述</label>
             <Textarea
               v-model="newLinkEntity.description"
-              placeholder="ENTER DESCRIPTION (OPTIONAL)"
+              placeholder="输入描述 (可选)"
               class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
             />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">ICON</label>
+              <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">图标</label>
               <Select v-model:model-value="newLinkEntity.icon">
                 <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono">
                   <SelectValue />
@@ -1011,7 +1025,7 @@ onMounted(async () => {
             </div>
 
             <div>
-              <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">COLOR</label>
+              <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">颜色</label>
               <Input
                 v-model="newLinkEntity.color"
                 type="color"
@@ -1037,7 +1051,7 @@ onMounted(async () => {
                 class="pixel-btn border-2 border-[var(--pixel-border)] text-[var(--pixel-text-secondary)] hover:bg-[var(--pixel-bg-tertiary)] font-mono uppercase tracking-wider"
                 @click="updateEntityDialog(false)"
               >
-                CANCEL
+                取消
               </Button>
             </DrawerClose>
             <Button
@@ -1045,7 +1059,7 @@ onMounted(async () => {
               class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] font-mono uppercase tracking-wider"
               @click="handleCreateLinkEntity"
             >
-              CREATE LINK
+              创建
             </Button>
           </div>
         </DrawerFooter>
@@ -1056,16 +1070,16 @@ onMounted(async () => {
       <DrawerContent class="pixel-card border-4 border-[var(--pixel-border)] bg-[var(--pixel-bg-secondary)] text-[var(--pixel-text-primary)]">
         <DrawerHeader>
           <DrawerTitle class="pixel-text-cyan text-lg font-bold uppercase tracking-wider">
-            📝 CREATE MAINTENANCE TASK
+            创建新待办
           </DrawerTitle>
-          <DrawerDescription class="text-[var(--pixel-text-secondary)] font-mono text-sm">
-            CREATE A NEW MAINTENANCE TASK FOR LINK ENTITY
+          <DrawerDescription class="text-[var(--pixel-text-secondary)] font-mono text-xs">
+            完成待办会提升更多链接度
           </DrawerDescription>
         </DrawerHeader>
 
         <div class="space-y-4">
           <div>
-            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">LINK ENTITY *</label>
+            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">实体 *</label>
             <Select v-model:model-value="newLinkTask.linkEntityId">
               <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono">
                 <SelectValue placeholder="SELECT LINK TO MAINTAIN" />
@@ -1087,26 +1101,26 @@ onMounted(async () => {
           </div>
 
           <div>
-            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">TASK TITLE *</label>
+            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">标题 *</label>
             <Input
               v-model="newLinkTask.title"
-              placeholder="ENTER TASK TITLE (E.G.: CALL, BIRTHDAY WISHES)"
+              placeholder="输入标题"
               class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
             />
           </div>
 
           <div>
-            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">DESCRIPTION</label>
+            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">描述</label>
             <Textarea
               v-model="newLinkTask.description"
-              placeholder="ENTER DETAILED DESCRIPTION (OPTIONAL)"
+              placeholder="输入描述 (可选)"
               class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] placeholder-[var(--pixel-text-muted)] font-mono"
             />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">PRIORITY</label>
+              <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">优先级</label>
               <Select v-model:model-value="newLinkTask.priority">
                 <SelectTrigger class="bg-[var(--pixel-bg-primary)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text-primary)] font-mono">
                   <SelectValue />
@@ -1151,7 +1165,7 @@ onMounted(async () => {
           </div>
 
           <div>
-            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">DUE DATE</label>
+            <label class="text-xs font-bold text-[var(--pixel-text-secondary)] mb-2 block uppercase tracking-wider font-mono">截止时间</label>
             <Input
               v-model="newLinkTask.dueDate"
               type="datetime-local"
@@ -1167,7 +1181,7 @@ onMounted(async () => {
                 class="pixel-btn border-2 border-[var(--pixel-border)] text-[var(--pixel-text-secondary)] hover:bg-[var(--pixel-bg-tertiary)] font-mono uppercase tracking-wider"
                 @click="updateTaskDialog(false)"
               >
-                CANCEL
+                取消
               </Button>
             </DrawerClose>
             <Button
@@ -1175,7 +1189,7 @@ onMounted(async () => {
               class="pixel-btn bg-[var(--pixel-accent)] hover:bg-[var(--pixel-accent-hover)] text-[var(--pixel-text-primary)] font-mono uppercase tracking-wider"
               @click="handleCreateLinkTask"
             >
-              CREATE TASK
+              创建
             </Button>
           </div>
         </DrawerFooter>
