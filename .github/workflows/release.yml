@@ -2,11 +2,42 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
 
 jobs:
+  check-commit:
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.check.outputs.should-build }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check commit message
+        id: check
+        run: |
+          COMMIT_MSG="$(git log -1 --pretty=%B)"
+          echo "Commit message: $COMMIT_MSG"
+          
+          if [[ "$COMMIT_MSG" =~ ^chore\(build\):\ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+            echo "should-build=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Found release commit for version: $VERSION"
+          else
+             echo "should-build=false" >> $GITHUB_OUTPUT
+             echo "Not a release commit"
+           fi
+
   build:
+    needs: check-commit
+    if: needs.check-commit.outputs.should-build == 'true'
     permissions:
       contents: write
     strategy:
@@ -105,7 +136,7 @@ jobs:
       - name: Rename macOS DMG with version
         if: matrix.platform == 'macos-latest'
         run: |
-          VERSION=${{ github.ref_name }}
+          VERSION="v${{ needs.check-commit.outputs.version }}"
           cd src-tauri/target/universal-apple-darwin/release/bundle/dmg
           for file in *.dmg; do
             if [ -f "$file" ]; then
@@ -149,7 +180,7 @@ jobs:
       - name: Rename Android APK with version
         if: matrix.platform == 'ubuntu-22.04'
         run: |
-          VERSION=${{ github.ref_name }}
+          VERSION="v${{ needs.check-commit.outputs.version }}"
           find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -type f | while read file; do
             dir=$(dirname "$file")
             base_name=$(basename "$file" .apk)
@@ -166,11 +197,14 @@ jobs:
 
   # === 创建 Release ===
   release:
-    needs: build
+    needs: [check-commit, build]
+    if: needs.check-commit.outputs.should-build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Download macOS DMG
         uses: actions/download-artifact@v4
         with:
@@ -183,11 +217,19 @@ jobs:
           name: android-apk
           path: ./artifacts/android/
 
-      - name: Upload Build Assets to Existing Release
+      - name: Create Git Tag
+        run: |
+          VERSION="v${{ needs.check-commit.outputs.version }}"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: '${{ github.ref_name }}'
+          tag_name: "v${{ needs.check-commit.outputs.version }}"
+          name: "v${{ needs.check-commit.outputs.version }}"
           body: |
             ## 📦 下载
 
@@ -203,6 +245,5 @@ jobs:
           prerelease: false
           make_latest: true
           fail_on_unmatched_files: false
-          append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

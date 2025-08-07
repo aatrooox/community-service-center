@@ -32,15 +32,6 @@ if [ "$AUTO_MODE" = true ]; then
     echo "🤖 自动模式已启用"
 fi
 
-# 先更新 Tauri 相关文件的版本号
-echo "🔧 更新 Tauri 版本号..."
-node scripts/update-tauri-version.js $VERSION_TYPE
-
-# 提交 Tauri 版本更新
-echo "💾 提交 Tauri 版本更新..."
-git add src-tauri/tauri.conf.json src-tauri/Cargo.toml
-git commit -m "chore: update Tauri version for $VERSION_TYPE release"
-
 # 使用 changelogen 更新 package.json 版本号和生成 changelog
 echo "📝 使用 changelogen 更新版本号和生成 changelog..."
 case $VERSION_TYPE in
@@ -55,15 +46,45 @@ case $VERSION_TYPE in
         ;;
 esac
 
+# 获取更新后的版本号
+NEW_VERSION=$(node -p "require('./package.json').version")
+echo "📦 新版本: v$NEW_VERSION"
+
+# 同步更新 Tauri 相关文件的版本号
+echo "🔧 同步 Tauri 版本号到 $NEW_VERSION..."
+
+# 更新 tauri.conf.json
+node -e "
+const fs = require('fs');
+const path = require('path');
+const tauriConfPath = path.join(__dirname, 'src-tauri/tauri.conf.json');
+const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'));
+tauriConf.version = '$NEW_VERSION';
+fs.writeFileSync(tauriConfPath, JSON.stringify(tauriConf, null, 2) + '\n');
+console.log('✅ 已更新 src-tauri/tauri.conf.json');
+"
+
+# 更新 Cargo.toml
+node -e "
+const fs = require('fs');
+const path = require('path');
+const cargoTomlPath = path.join(__dirname, 'src-tauri/Cargo.toml');
+let cargoToml = fs.readFileSync(cargoTomlPath, 'utf8');
+cargoToml = cargoToml.replace(/^version = \"[^\"]+\"/m, 'version = \"$NEW_VERSION\"');
+fs.writeFileSync(cargoTomlPath, cargoToml);
+console.log('✅ 已更新 src-tauri/Cargo.toml');
+"
+
+# 提交 Tauri 版本同步更新
+echo "💾 提交 Tauri 版本同步更新..."
+git add src-tauri/tauri.conf.json src-tauri/Cargo.toml
+git commit -m "chore(build): release v$NEW_VERSION"
+
 echo "✅ 版本号更新完成！"
 
 if [ "$AUTO_MODE" = true ]; then
 
     echo "🔄 自动执行后续步骤..."
-    
-    # 获取新版本号
-    NEW_VERSION=$(node -p "require('./package.json').version")
-    echo "📦 新版本: v$NEW_VERSION"
     
     # changelogen 已自动创建标签和 release，只需要推送
     echo "⬆️ 推送到远程仓库..."
