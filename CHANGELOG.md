@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v0.1.34
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.33...v0.1.34)
+
+### 🏡 Chore
+
+- 修改构建触发条件 ([f1dbcc0](https://github.com/aatrooox/community-service-center/commit/f1dbcc0))
+- Eslint ([e0d6783](https://github.com/aatrooox/community-service-center/commit/e0d6783))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.33
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.32...v0.1.33)
