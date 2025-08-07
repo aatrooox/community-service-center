@@ -6,8 +6,8 @@ on:
       - main
     paths-ignore:
       - '**.md'
-      - '.gitignore'
-      - 'LICENSE'
+      - .gitignore
+      - LICENSE
 
 jobs:
   check-commit:
@@ -18,13 +18,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Check commit message
         id: check
         run: |
           COMMIT_MSG="$(git log -1 --pretty=%B)"
           echo "Commit message: $COMMIT_MSG"
-          
+
           if [[ "$COMMIT_MSG" =~ ^chore\(build\):\ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             VERSION="${BASH_REMATCH[1]}"
             echo "should-build=true" >> $GITHUB_OUTPUT
@@ -228,8 +228,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ needs.check-commit.outputs.version }}"
-          name: "v${{ needs.check-commit.outputs.version }}"
+          tag_name: 'v${{ needs.check-commit.outputs.version }}'
+          name: 'v${{ needs.check-commit.outputs.version }}'
           body: |
             ## 📦 下载
 
