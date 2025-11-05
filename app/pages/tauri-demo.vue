@@ -1,488 +1,213 @@
 <script setup lang="ts">
-// 使用新的 Composables API
-const services = useTauriServices()
-const store = useTauriStore()
-const notification = useTauriNotification()
-const sql = useTauriSQL()
+import { ref } from 'vue'
+import { toast } from 'vue-sonner'
 
-// 存储相关状态
-const storeKey = ref('')
-const storeValue = ref('')
-const retrievedValue = ref<any>(null)
+useHead({ title: 'Tauri 插件演示' })
 
-// 通知相关状态
-const notificationTitle = ref('测试通知')
-const notificationBody = ref('这是一个测试通知消息')
+const { get: httpGet } = useTauriHTTP()
+const { createUser, getAllUsers, autoInit: initSQL } = useTauriSQL()
+const { sendNotification } = useTauriNotification()
+const { setItem, getItem, initStore } = useTauriStore()
 
-// SQL 相关状态
-const userName = ref('')
-const userEmail = ref('')
-const users = ref<any[]>([])
-const settingKey = ref('')
-const settingValue = ref('')
-const settings = ref<any[]>([])
+const isLoading = ref(false)
+const httpResult = ref('')
+const sqlResult = ref('')
 
-// 初始化服务
-function initServices() {
-  services.initializeServices()
-}
+// HTTP 请求演示
+async function testHTTP() {
+  isLoading.value = true
+  try {
+    console.log('开始 HTTP 请求测试...')
+    const response = await httpGet('https://jsonplaceholder.typicode.com/posts/1')
+    console.log('HTTP 响应:', response)
 
-// 存储操作
-function setStoreValue() {
-  store.setItem(storeKey.value, storeValue.value)
-    .then(() => {
-      storeValue.value = ''
-    })
-    .catch(console.error)
-}
-
-function getStoreValue() {
-  store.getItem(storeKey.value)
-    .then((value) => {
-      retrievedValue.value = value
-    })
-    .catch(console.error)
-}
-
-function deleteStoreValue() {
-  store.deleteItem(storeKey.value)
-    .then(() => {
-      retrievedValue.value = null
-    })
-    .catch(console.error)
-}
-
-// 通知操作
-function requestNotificationPermission() {
-  notification.requestPermission()
-    .catch(console.error)
-}
-
-function sendTestNotification() {
-  notification.sendNotification(notificationTitle.value, notificationBody.value)
-    .catch(console.error)
-}
-
-function sendSuccessNotification() {
-  notification.sendSuccessNotification('操作执行成功！')
-    .catch(console.error)
-}
-
-function sendErrorNotification() {
-  notification.sendErrorNotification('操作执行失败！')
-    .catch(console.error)
-}
-
-// SQL 操作
-function initDatabase() {
-  sql.initDatabase()
-    .then(() => {
-      notification.sendSuccessNotification('数据库初始化成功！')
-      loadUsers()
-      loadSettings()
-    })
-    .catch((error: any) => {
-      notification.sendErrorNotification('数据库初始化失败！')
-      console.error(error)
-    })
-}
-
-function addUser() {
-  if (!userName.value || !userEmail.value) {
-    notification.sendErrorNotification('请填写用户名和邮箱！')
-    return
-  }
-
-  sql.createUser(userName.value, userEmail.value)
-    .then(() => {
-      notification.sendSuccessNotification('用户添加成功！')
-      userName.value = ''
-      userEmail.value = ''
-      loadUsers()
-    })
-    .catch((error: any) => {
-      notification.sendErrorNotification('用户添加失败！')
-      console.error(error)
-    })
-}
-
-function loadUsers() {
-  sql.getAllUsers()
-    .then((result) => {
-      users.value = result
-    })
-    .catch(console.error)
-}
-
-function deleteUser(id: number) {
-  sql.deleteUser(id)
-    .then(() => {
-      notification.sendSuccessNotification('用户删除成功！')
-      loadUsers()
-    })
-    .catch((error: any) => {
-      notification.sendErrorNotification('用户删除失败！')
-      console.error(error)
-    })
-}
-
-function setSetting() {
-  if (!settingKey.value || !settingValue.value) {
-    notification.sendErrorNotification('请填写设置键和值！')
-    return
-  }
-
-  sql.setSetting(settingKey.value, settingValue.value)
-    .then(() => {
-      notification.sendSuccessNotification('设置保存成功！')
-      settingKey.value = ''
-      settingValue.value = ''
-      loadSettings()
-    })
-    .catch((error: any) => {
-      notification.sendErrorNotification('设置保存失败！')
-      console.error(error)
-    })
-}
-
-function loadSettings() {
-  sql.getAllSettings()
-    .then((result) => {
-      // getAllSettings返回的是Record<string, string>，需要转换为数组格式
-      settings.value = Object.entries(result).map(([key, value]) => ({ key, value }))
-    })
-    .catch(console.error)
-}
-
-function deleteSetting(key: string) {
-  sql.deleteSetting(key)
-    .then(() => {
-      notification.sendSuccessNotification('设置删除成功！')
-      loadSettings()
-    })
-    .catch((error: any) => {
-      notification.sendErrorNotification('设置删除失败！')
-      console.error(error)
-    })
-}
-
-// 页面加载时初始化
-onMounted(() => {
-  // 自动初始化服务
-  services.autoInit()
-
-  // 加载 SQL 数据
-  setTimeout(() => {
-    if (sql.isInitialized.value) {
-      loadUsers()
-      loadSettings()
+    if (response) {
+      httpResult.value = JSON.stringify(response.data, null, 2)
+      toast.success('HTTP 请求成功！')
     }
-  }, 1000)
-})
+    else {
+      httpResult.value = '请求失败：无响应数据'
+      toast.error('HTTP 请求失败：无响应数据')
+    }
+  }
+  catch (error: any) {
+    console.error('HTTP 请求失败:', error)
+    httpResult.value = `请求失败：${error.message || error}`
+    toast.error(`HTTP 请求失败：${error.message || '未知错误'}`)
+  }
+  finally {
+    isLoading.value = false
+  }
+}
+
+// SQLite 演示
+async function testSQL() {
+  isLoading.value = true
+  try {
+    console.log('开始 SQLite 初始化...')
+    await initSQL()
+    console.log('SQLite 初始化完成')
+
+    // 创建测试用户
+    console.log('创建测试用户...')
+    const userId = await createUser(`测试用户${Date.now()}`, `test${Date.now()}@example.com`)
+    console.log('用户创建完成，ID:', userId)
+
+    // 查询用户数据
+    console.log('查询用户数据...')
+    const users = await getAllUsers()
+    console.log('查询到用户数据:', users)
+
+    sqlResult.value = JSON.stringify(users.slice(0, 3), null, 2)
+    toast.success('SQLite 操作成功！')
+  }
+  catch (error: any) {
+    console.error('SQLite 操作失败:', error)
+    sqlResult.value = `操作失败：${error.message || error}`
+
+    // 检查是否是迁移错误
+    if (error.message && error.message.includes('migration')) {
+      toast.error('数据库迁移错误，请重启应用或清除数据库文件')
+      sqlResult.value += '\n\n建议解决方案：\n1. 重启应用\n2. 或清除数据库文件后重试'
+    }
+    else {
+      toast.error('SQLite 操作失败')
+    }
+  }
+  finally {
+    isLoading.value = false
+  }
+}
+
+// 系统通知演示
+async function testNotification() {
+  try {
+    await sendNotification('Tauri 应用', '这是一条来自 Tauri 应用的系统通知！')
+    toast.success('系统通知已发送！')
+  }
+  catch (error) {
+    console.error('通知发送失败:', error)
+    toast.error('通知发送失败')
+  }
+}
+
+// Store 演示
+async function testStore() {
+  try {
+    await initStore()
+    const key = 'demo_key'
+    const value = `测试值 ${Date.now()}`
+
+    await setItem(key, value)
+    const retrieved = await getItem(key)
+
+    toast.success(`Store 操作成功！存储的值: ${retrieved}`)
+  }
+  catch (error) {
+    console.error('Store 操作失败:', error)
+    toast.error('Store 操作失败')
+  }
+}
 </script>
 
 <template>
-  <div class="container mx-auto p-6 space-y-8">
-    <div class="text-center">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">
-        Tauri 服务演示
-      </h1>
-      <p class="text-gray-600">
-        使用新的 Composables API 进行 Tauri 插件操作
-      </p>
-    </div>
-
-    <!-- 服务初始化状态 -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        服务初始化状态
-      </h2>
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <span>初始化状态:</span>
-          <span
-            :class="{
-              'text-green-600': services.isInitialized.value,
-              'text-yellow-600': services.isLoading.value,
-              'text-red-600': services.error.value,
-            }"
-          >
-            {{ services.isInitialized.value ? '已完成' : services.isLoading.value ? '初始化中...' : '未初始化' }}
-          </span>
-        </div>
-        <div v-if="services.isLoading.value" class="w-full bg-gray-200 rounded-full h-2">
-          <div
-            class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            :style="{ width: `${services.initProgress.value}%` }"
-          />
-        </div>
-        <div v-if="services.error.value" class="text-red-600 text-sm">
-          错误: {{ services.error.value }}
-        </div>
-        <button
-          v-if="!services.isInitialized.value && !services.isLoading.value"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          @click="initServices"
+  <div class="min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- 标题 -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-foreground mb-4">
+          Tauri 插件演示
+        </h1>
+        <NuxtLink
+          to="/"
+          class="text-primary hover:underline"
         >
-          初始化服务
-        </button>
+          ← 返回首页
+        </NuxtLink>
       </div>
-    </div>
 
-    <!-- 存储操作 -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        键值存储操作
-      </h2>
-      <div class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            v-model="storeKey"
-            placeholder="键名"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-          <input
-            v-model="storeValue"
-            placeholder="值"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-        </div>
-        <div class="flex gap-2">
+      <!-- 功能演示区域 -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- HTTP 请求 -->
+        <div class="p-6 border rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">
+            HTTP 请求
+          </h2>
+          <p class="text-sm text-muted-foreground mb-4">
+            测试通过 @tauri-apps/plugin-http 发送 HTTP 请求
+          </p>
           <button
-            :disabled="store.isLoading.value || !storeKey || !storeValue"
-            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="setStoreValue"
+            type="button"
+            :disabled="isLoading"
+            class="w-full p-3 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            @click="testHTTP"
           >
-            设置值
+            {{ isLoading ? '请求中...' : '发送 HTTP 请求' }}
           </button>
-          <button
-            :disabled="store.isLoading.value || !storeKey"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="getStoreValue"
+          <div
+            v-if="httpResult"
+            class="mt-4 p-3 bg-muted rounded text-xs overflow-auto max-h-32"
           >
-            获取值
-          </button>
-          <button
-            :disabled="store.isLoading.value || !storeKey"
-            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="deleteStoreValue"
-          >
-            删除值
-          </button>
-        </div>
-        <div v-if="store.error.value" class="text-red-600 text-sm">
-          存储错误: {{ store.error.value }}
-        </div>
-        <div v-if="retrievedValue !== null" class="p-3 bg-gray-50 rounded">
-          <strong>获取的值:</strong> {{ retrievedValue }}
-        </div>
-      </div>
-    </div>
-
-    <!-- 通知操作 -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        通知操作
-      </h2>
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <span>通知权限:</span>
-          <span
-            :class="{
-              'text-green-600': notification.hasPermission.value,
-              'text-red-600': !notification.hasPermission.value,
-            }"
-          >
-            {{ notification.hasPermission.value ? '已授权' : '未授权' }}
-          </span>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            v-model="notificationTitle"
-            placeholder="通知标题"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-          <input
-            v-model="notificationBody"
-            placeholder="通知内容"
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-        </div>
-        <div class="flex gap-2">
-          <button
-            v-if="!notification.hasPermission.value"
-            :disabled="notification.isLoading.value"
-            class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="requestNotificationPermission"
-          >
-            请求权限
-          </button>
-          <button
-            :disabled="notification.isLoading.value || !notificationTitle || !notificationBody"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="sendTestNotification"
-          >
-            发送通知
-          </button>
-          <button
-            :disabled="notification.isLoading.value"
-            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="sendSuccessNotification"
-          >
-            成功通知
-          </button>
-          <button
-            :disabled="notification.isLoading.value"
-            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="sendErrorNotification"
-          >
-            错误通知
-          </button>
-        </div>
-        <div v-if="notification.error.value" class="text-red-600 text-sm">
-          通知错误: {{ notification.error.value }}
-        </div>
-      </div>
-    </div>
-
-    <!-- SQL 数据库操作 -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        SQL 数据库操作
-      </h2>
-      <div class="space-y-6">
-        <!-- 数据库初始化 -->
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded">
-          <span>数据库状态:</span>
-          <span
-            :class="{
-              'text-green-600': sql.isInitialized.value,
-              'text-red-600': !sql.isInitialized.value,
-            }"
-          >
-            {{ sql.isInitialized.value ? '已初始化' : '未初始化' }}
-          </span>
-          <button
-            v-if="!sql.isInitialized.value"
-            :disabled="sql.isLoading.value"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="initDatabase"
-          >
-            初始化数据库
-          </button>
-        </div>
-
-        <!-- 用户管理 -->
-        <div class="border-t pt-6">
-          <h3 class="text-lg font-medium mb-4">
-            用户管理
-          </h3>
-          <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                v-model="userName"
-                placeholder="用户名"
-                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-              <input
-                v-model="userEmail"
-                placeholder="邮箱"
-                type="email"
-                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-            <button
-              :disabled="sql.isLoading.value || !userName || !userEmail"
-              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              @click="addUser"
-            >
-              添加用户
-            </button>
-
-            <!-- 用户列表 -->
-            <div v-if="users.length > 0" class="mt-4">
-              <h4 class="font-medium mb-2">
-                用户列表:
-              </h4>
-              <div class="space-y-2">
-                <div
-                  v-for="user in users"
-                  :key="user.id"
-                  class="flex items-center justify-between p-3 bg-gray-50 rounded"
-                >
-                  <div>
-                    <span class="font-medium">{{ user.name }}</span>
-                    <span class="text-gray-600 ml-2">{{ user.email }}</span>
-                  </div>
-                  <button
-                    :disabled="sql.isLoading.value"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    @click="deleteUser(user.id)"
-                  >
-                    删除
-                  </button>
-                </div>
-              </div>
-            </div>
+            <pre>{{ httpResult }}</pre>
           </div>
         </div>
 
-        <!-- 设置管理 -->
-        <div class="border-t pt-6">
-          <h3 class="text-lg font-medium mb-4">
-            设置管理
-          </h3>
-          <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                v-model="settingKey"
-                placeholder="设置键"
-                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-              <input
-                v-model="settingValue"
-                placeholder="设置值"
-                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-            <button
-              :disabled="sql.isLoading.value || !settingKey || !settingValue"
-              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              @click="setSetting"
-            >
-              保存设置
-            </button>
-
-            <!-- 设置列表 -->
-            <div v-if="settings.length > 0" class="mt-4">
-              <h4 class="font-medium mb-2">
-                设置列表:
-              </h4>
-              <div class="space-y-2">
-                <div
-                  v-for="setting in settings"
-                  :key="setting.key"
-                  class="flex items-center justify-between p-3 bg-gray-50 rounded"
-                >
-                  <div>
-                    <span class="font-medium">{{ setting.key }}</span>
-                    <span class="text-gray-600 ml-2">{{ setting.value }}</span>
-                  </div>
-                  <button
-                    :disabled="sql.isLoading.value"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    @click="deleteSetting(setting.key)"
-                  >
-                    删除
-                  </button>
-                </div>
-              </div>
-            </div>
+        <!-- SQLite 数据库 -->
+        <div class="p-6 border rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">
+            SQLite 数据库
+          </h2>
+          <p class="text-sm text-muted-foreground mb-4">
+            测试通过 @tauri-apps/plugin-sql 操作 SQLite 数据库
+          </p>
+          <button
+            type="button"
+            :disabled="isLoading"
+            class="w-full p-3 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+            @click="testSQL"
+          >
+            {{ isLoading ? '操作中...' : '测试 SQLite 操作' }}
+          </button>
+          <div
+            v-if="sqlResult"
+            class="mt-4 p-3 bg-muted rounded text-xs overflow-auto max-h-32"
+          >
+            <pre>{{ sqlResult }}</pre>
           </div>
         </div>
 
-        <div v-if="sql.error.value" class="text-red-600 text-sm">
-          SQL 错误: {{ sql.error.value }}
+        <!-- 系统通知 -->
+        <div class="p-6 border rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">
+            系统通知
+          </h2>
+          <p class="text-sm text-muted-foreground mb-4">
+            测试发送系统通知
+          </p>
+          <button
+            type="button"
+            class="w-full p-3 bg-purple-600 text-white rounded hover:bg-purple-700"
+            @click="testNotification"
+          >
+            发送系统通知
+          </button>
+        </div>
+
+        <!-- Store 存储 -->
+        <div class="p-6 border rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">
+            Store 存储
+          </h2>
+          <p class="text-sm text-muted-foreground mb-4">
+            测试通过 @tauri-apps/plugin-store 进行本地存储
+          </p>
+          <button
+            type="button"
+            class="w-full p-3 bg-orange-600 text-white rounded hover:bg-orange-700"
+            @click="testStore"
+          >
+            测试 Store 存储
+          </button>
         </div>
       </div>
     </div>

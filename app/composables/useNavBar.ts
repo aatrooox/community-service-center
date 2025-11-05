@@ -1,3 +1,5 @@
+import { readonly, ref } from 'vue'
+
 interface NavBarConfig {
   title?: string
   showBackButton?: boolean

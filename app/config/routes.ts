@@ -29,28 +29,8 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     type: PAGE_TYPES.STATIC,
   },
   {
-    path: '/example',
-    name: '示例',
-    type: PAGE_TYPES.STATIC,
-  },
-  {
-    path: '/demo-environment',
-    name: '环境检测演示',
-    type: PAGE_TYPES.STATIC,
-  },
-  {
-    path: '/todos',
-    name: '待办',
-    type: PAGE_TYPES.TAURI_DEPENDENT,
-  },
-  {
     path: '/tauri-demo',
     name: 'tauri-demo',
-    type: PAGE_TYPES.TAURI_DEPENDENT,
-  },
-  {
-    path: '/settings',
-    name: '设置',
     type: PAGE_TYPES.TAURI_DEPENDENT,
   },
 ]

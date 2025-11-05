@@ -3,6 +3,7 @@
  * 提供统一的接口数据获取、缓存管理和错误处理功能
  */
 
+import { readonly, ref } from 'vue'
 import { useTauriHTTP } from './useTauriHTTP'
 import { useTauriSQL } from './useTauriSQL'
 import { useTauriStore } from './useTauriStore'
@@ -69,6 +70,13 @@ export class APIService {
     this.httpClient = useTauriHTTP()
     this.sqlService = useTauriSQL()
     this.storeService = useTauriStore()
+
+    // 尝试在客户端环境中初始化底层服务
+    if (import.meta.client) {
+      // SQL（若需要）和 Store 的惰性初始化
+      this.sqlService.autoInit?.().catch(() => {})
+      this.storeService.initStore?.().catch(() => {})
+    }
   }
 
   /**
@@ -76,7 +84,9 @@ export class APIService {
    */
   private generateCacheKey(endpointId: number, params?: Record<string, any>): string {
     const paramStr = params ? JSON.stringify(params) : ''
-    return `endpoint_${endpointId}_${btoa(paramStr)}`
+    // 使用 URL 安全编码，避免 SSR 下的 Buffer/btoa 兼容问题
+    const encoded = encodeURIComponent(paramStr)
+    return `endpoint_${endpointId}_${encoded}`
   }
 
   /**
@@ -84,13 +94,52 @@ export class APIService {
    */
   private async getServerToken(serverUrl: string): Promise<string | null> {
     try {
-      const tokens = await this.sqlService.getServerTokensByUrl(serverUrl)
-      return tokens.length > 0 ? tokens[0].tokenValue : null
+      // 优先从 SQL 的设置表读取（存在该 API）
+      const fromSql = await this.sqlService.getSetting?.(`token:${serverUrl}`)
+      if (fromSql)
+        return fromSql
+
+      // 回退到 Store
+      await this.storeService.initStore?.()
+      const fromStore = await this.storeService.getItem(`token:${serverUrl}`) as string | null
+      return fromStore ?? null
     }
     catch (err) {
       console.warn('获取服务器 Token 失败:', err)
       return null
     }
+  }
+
+  /**
+   * 从 Store 读取所有接口配置
+   */
+  private async getAllApiEndpointsFromStore(): Promise<ApiEndpoint[]> {
+    try {
+      await this.storeService.initStore?.()
+      const endpoints = await this.storeService.getItem('api:endpoints') as ApiEndpoint[] | null
+      return Array.isArray(endpoints) ? endpoints : []
+    }
+    catch (err) {
+      console.warn('读取接口配置失败（Store）:', err)
+      return []
+    }
+  }
+
+  /**
+   * 根据服务器地址筛选接口
+   */
+  private async getApiEndpointsByServerFromStore(serverUrl: string): Promise<ApiEndpoint[]> {
+    const all = await this.getAllApiEndpointsFromStore()
+    return all.filter(ep => ep.serverUrl === serverUrl)
+  }
+
+  /**
+   * 基于 endpoints 推断服务器列表（name 使用 url）
+   */
+  private async getAllServersFromStore(): Promise<any[]> {
+    const endpoints = await this.getAllApiEndpointsFromStore()
+    const urls = Array.from(new Set(endpoints.map(e => e.serverUrl)))
+    return urls.map(u => ({ url: u, name: u }))
   }
 
   /**
@@ -184,8 +233,8 @@ export class APIService {
     const { forceRefresh = false } = options
 
     // 获取接口配置
-    const endpoints = await this.sqlService.getAllApiEndpoints()
-    const endpoint = endpoints.find(ep => ep.id === endpointId)
+    const endpoints = await this.getAllApiEndpointsFromStore()
+    const endpoint = endpoints.find((ep: ApiEndpoint) => ep.id === endpointId)
 
     if (!endpoint) {
       throw new Error(`接口配置不存在: ${endpointId}`)
@@ -200,14 +249,20 @@ export class APIService {
     // 检查缓存（如果不强制刷新）
     if (!forceRefresh) {
       try {
-        const cached = await this.sqlService.getApiCache(cacheKey)
+        await this.storeService.initStore?.()
+        const cachedRaw = await this.storeService.getItem(`cache:${cacheKey}`)
+        const cached: any = cachedRaw
         if (cached) {
-          console.log(`[API] 使用缓存数据: ${endpoint.name}`)
-          return {
-            data: cached.data,
-            cached: true,
-            timestamp: cached.createdAt,
-            endpoint,
+          const now = Date.now()
+          const expire = cached.expiresAt ? new Date(cached.expiresAt).getTime() : Infinity
+          if (now < expire) {
+            console.log(`[API] 使用缓存数据: ${endpoint.name}`)
+            return {
+              data: cached.data,
+              cached: true,
+              timestamp: cached.createdAt,
+              endpoint,
+            }
           }
         }
       }
@@ -223,8 +278,13 @@ export class APIService {
     // 保存到缓存
     if (endpoint.cacheDuration > 0) {
       try {
-        const expiresAt = new Date(Date.now() + endpoint.cacheDuration * 1000)
-        await this.sqlService.setApiCache(endpointId, cacheKey, data, expiresAt)
+        await this.storeService.initStore?.()
+        const expiresAt = new Date(Date.now() + endpoint.cacheDuration * 1000).toISOString()
+        await this.storeService.setItem(`cache:${cacheKey}`, {
+          data,
+          createdAt: timestamp,
+          expiresAt,
+        })
       }
       catch (err) {
         console.warn('保存缓存失败:', err)
@@ -246,13 +306,13 @@ export class APIService {
     serverUrl: string,
     options: FetchOptions = {},
   ): Promise<Record<string, ApiResponse>> {
-    const endpoints = await this.sqlService.getApiEndpointsByServer(serverUrl)
+    const endpoints = await this.getApiEndpointsByServerFromStore(serverUrl)
     const results: Record<string, ApiResponse> = {}
     const errors: Record<string, string> = {}
 
     // 并发获取所有接口数据
     await Promise.allSettled(
-      endpoints.map(async (endpoint) => {
+      endpoints.map(async (endpoint: ApiEndpoint) => {
         try {
           const response = await this.fetchEndpointData(endpoint.id, options)
           results[endpoint.name] = response
@@ -279,12 +339,12 @@ export class APIService {
     options: FetchOptions = {},
   ): Promise<Record<string, Record<string, ApiResponse>>> {
     // 获取所有服务器配置
-    const servers = await this.sqlService.getAllServers()
+    const servers = await this.getAllServersFromStore()
     const results: Record<string, Record<string, ApiResponse>> = {}
 
     // 并发获取所有服务器数据
     await Promise.allSettled(
-      servers.map(async (server) => {
+      servers.map(async (server: any) => {
         try {
           const serverData = await this.fetchServerData(server.url, options)
           results[server.name] = serverData
@@ -303,14 +363,45 @@ export class APIService {
    * 清理过期缓存
    */
   async cleanupCache(): Promise<void> {
-    await this.sqlService.clearExpiredCache()
+    try {
+      await this.storeService.initStore?.()
+      const keys = await this.storeService.getKeys?.()
+      if (keys && Array.isArray(keys)) {
+        const now = Date.now()
+        for (const key of keys) {
+          if (typeof key === 'string' && key.startsWith('cache:')) {
+            const item = await this.storeService.getItem<{ expiresAt?: string }>(key)
+            const expire = item?.expiresAt ? new Date(item.expiresAt).getTime() : Infinity
+            if (now >= expire) {
+              await this.storeService.deleteItem(key)
+            }
+          }
+        }
+      }
+    }
+    catch (err) {
+      console.warn('清理缓存失败:', err)
+    }
   }
 
   /**
    * 清理指定接口的缓存
    */
   async clearEndpointCache(endpointId: number): Promise<void> {
-    await this.sqlService.clearApiCache(endpointId)
+    try {
+      await this.storeService.initStore?.()
+      const keys = await this.storeService.getKeys?.()
+      if (keys && Array.isArray(keys)) {
+        for (const key of keys) {
+          if (typeof key === 'string' && key.startsWith(`cache:endpoint_${endpointId}_`)) {
+            await this.storeService.deleteItem(key)
+          }
+        }
+      }
+    }
+    catch (err) {
+      console.warn('清理指定接口缓存失败:', err)
+    }
   }
 }
 
