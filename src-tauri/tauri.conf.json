@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "tauri-v2-nuxt-appp",
-  "version": "0.1.38",
+  "version": "0.2.0",
   "identifier": "com.zzaoclub.tauri-v2-nuxt-appp",
   "build": {
     "frontendDist": "../dist",
