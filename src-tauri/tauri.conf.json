@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Community Service Center",
+  "productName": "tauri-v2-nuxt-appp",
   "version": "0.1.38",
-  "identifier": "com.zzaoclub.community-service-center",
+  "identifier": "com.zzaoclub.tauri-v2-nuxt-appp",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:4577",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "community-service-center",
+        "title": "tauri-v2-nuxt-appp",
         "width": 1200,
         "height": 800,
         "resizable": true,
