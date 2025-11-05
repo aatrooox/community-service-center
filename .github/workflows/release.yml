@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
+      - "**.md"
       - .gitignore
       - LICENSE
 
@@ -47,7 +47,9 @@ jobs:
           - platform: macos-latest
             args: --target universal-apple-darwin
           - platform: ubuntu-22.04
-            args: ''
+            args: ""
+          - platform: windows-latest
+            args: ""
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -77,6 +79,17 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
+
+      # === Windows 依赖 ===
+      - name: Install Rust (Windows)
+        if: matrix.platform == 'windows-latest'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install WiX Toolset (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: powershell
+        run: |
+          choco install wixtoolset -y
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -118,7 +131,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Setup Android SDK (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -151,6 +164,38 @@ jobs:
         with:
           name: macos-dmg
           path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+
+      # === 构建 Windows 安装包 ===
+      - name: Build Windows app
+        if: matrix.platform == 'windows-latest'
+        run: pnpm tauri build ${{ matrix.args }}
+
+      - name: Rename Windows installers with version
+        if: matrix.platform == 'windows-latest'
+        shell: powershell
+        run: |
+          $VERSION = "v${{ needs.check-commit.outputs.version }}"
+          $bundleDir = "src-tauri/target/x86_64-pc-windows-msvc/release/bundle"
+          if (-Not (Test-Path $bundleDir)) {
+            $bundleDir = "src-tauri/target/release/bundle"
+          }
+          Get-ChildItem -Path $bundleDir -Recurse -Include *.msi,*.exe -File | ForEach-Object {
+            $dir = Split-Path -Path $_.FullName -Parent
+            $base = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
+            $ext = $_.Extension
+            Rename-Item -Path $_.FullName -NewName "$base-$VERSION$ext"
+          }
+
+      - name: Upload Windows installers
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.msi
+            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.exe
+            src-tauri/target/release/bundle/**/*.msi
+            src-tauri/target/release/bundle/**/*.exe
 
       # === 构建 Android APK ===
       - name: Setup Android NDK
@@ -217,22 +262,30 @@ jobs:
           name: android-apk
           path: ./artifacts/android/
 
+      - name: Download Windows installers
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installers
+          path: ./artifacts/windows/
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: 'v${{ needs.check-commit.outputs.version }}'
-          name: 'v${{ needs.check-commit.outputs.version }}'
+          tag_name: "v${{ needs.check-commit.outputs.version }}"
+          name: "v${{ needs.check-commit.outputs.version }}"
           body: |
             ## 📦 下载
 
             - **macOS (Universal)**: `.dmg` 文件
             - **Android (arm64-v8a)**: `.apk` 文件
+            - **Windows (x64)**: `.msi` 或 `.exe` 安装包
 
             ## 📝 更新日志
             请查看 [CHANGELOG.md](https://github.com/aatrooox/community-service-center/blob/main/CHANGELOG.md)
           files: |
             ./artifacts/macos/*.dmg
             ./artifacts/android/**/*.apk
+            ./artifacts/windows/**/*.{msi,exe}
           draft: false
           prerelease: false
           make_latest: true
