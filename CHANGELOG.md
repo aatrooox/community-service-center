@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.2.1
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.2.0...v0.2.1)
+
+### 🩹 Fixes
+
+- 安卓打包问题修复 ([c5fb2a0](https://github.com/aatrooox/community-service-center/commit/c5fb2a0))
+
+### 🏡 Chore
+
+- **build:** Release v0.2.0 ([cf93f40](https://github.com/aatrooox/community-service-center/commit/cf93f40))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.2.0
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.39...v0.2.0)
