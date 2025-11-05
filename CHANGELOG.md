@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.2.0
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.39...v0.2.0)
+
+### 🚀 Enhancements
+
+- 清除无用的业务逻辑; 重置为空壳 app ([e98d515](https://github.com/aatrooox/community-service-center/commit/e98d515))
+
+### 🏡 Chore
+
+- 清理代码 ([6a4b4f5](https://github.com/aatrooox/community-service-center/commit/6a4b4f5))
+- Template branch build test ([8a4ce18](https://github.com/aatrooox/community-service-center/commit/8a4ce18))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.39
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.38...v0.1.39)
