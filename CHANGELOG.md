@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.39
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.38...v0.1.39)
+
+### 🏡 Chore
+
+- **build:** Release v0.1.38 ([6deea37](https://github.com/aatrooox/community-service-center/commit/6deea37))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.38
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.37...v0.1.38)
