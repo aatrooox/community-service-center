@@ -1,6 +1,34 @@
 # Changelog
 
 
+## v0.2.2
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.39...v0.2.2)
+
+### 🚀 Enhancements
+
+- 清除无用的业务逻辑; 重置为空壳 app ([e98d515](https://github.com/aatrooox/community-service-center/commit/e98d515))
+
+### 🩹 Fixes
+
+- 安卓打包问题修复 ([c5fb2a0](https://github.com/aatrooox/community-service-center/commit/c5fb2a0))
+
+### 🏡 Chore
+
+- **release:** V0.1.39 ([18d07f8](https://github.com/aatrooox/community-service-center/commit/18d07f8))
+- 清理代码 ([6a4b4f5](https://github.com/aatrooox/community-service-center/commit/6a4b4f5))
+- Template branch build test ([8a4ce18](https://github.com/aatrooox/community-service-center/commit/8a4ce18))
+- **release:** V0.2.0 ([9962441](https://github.com/aatrooox/community-service-center/commit/9962441))
+- **build:** Release v0.2.0 ([cf93f40](https://github.com/aatrooox/community-service-center/commit/cf93f40))
+- **release:** V0.2.1 ([2ae384b](https://github.com/aatrooox/community-service-center/commit/2ae384b))
+- **build:** Release v0.2.1 ([aa20955](https://github.com/aatrooox/community-service-center/commit/aa20955))
+- 修复名称 ([01f1645](https://github.com/aatrooox/community-service-center/commit/01f1645))
+- 修复名称 ([ba78cc8](https://github.com/aatrooox/community-service-center/commit/ba78cc8))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.2.1
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.2.0...v0.2.1)
