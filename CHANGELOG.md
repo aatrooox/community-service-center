@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.38
+
+[compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.37...v0.1.38)
+
+### 🚀 Enhancements
+
+- 增加 windows 平台打包 ([7067a16](https://github.com/aatrooox/community-service-center/commit/7067a16))
+
+### 🏡 Chore
+
+- **build:** Release v0.1.37 ([c9acb4b](https://github.com/aatrooox/community-service-center/commit/c9acb4b))
+
+### ❤️ Contributors
+
+- Aatrox <gnakzz@qq.com>
+
 ## v0.1.37
 
 [compare changes](https://github.com/aatrooox/community-service-center/compare/v0.1.36...v0.1.37)
